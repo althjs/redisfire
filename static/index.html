@@ -1,0 +1,73 @@
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>로그창</title>
+
+<style>
+body { padding: 0; }
+
+pre {
+    padding: 5px 5px 7px 5px;
+    -webkit-animation-name: show;
+    -webkit-animation-duration:3s;
+
+    background-color: #eee;
+}
+pre.redis {
+    -webkit-animation-name: show_redis;
+    background-color: #c1e0c5;
+}
+
+@-webkit-keyframes show {
+  from {background-color: #f7b8b8}
+  to { background-color: #eee}
+}
+
+@-webkit-keyframes show_redis {
+  from {background-color: #f7b8b8}
+  to { background-color: #c1e0c5}
+}
+
+</style>
+</head>
+<body>
+
+    <div id="_log"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io.connect('http://' + location.host + '/redis');
+      var _log = document.getElementById('_log');
+
+      function doLog(data, group) {
+          var li = document.createElement("pre");
+          li.innerHTML = data;
+          if (group) {
+              li.className = group;
+          }
+          _log.insertBefore(li, _log.querySelector('pre'));
+      }
+
+      socket.on('hi', function (data) {
+        doLog(data);
+        // socket.emit('my other event', { my: 'data' });
+      });
+
+
+      socket.on('redis', function (data) {
+        doLog(data, 'redis');
+      });
+
+      setTimeout(function() {
+
+          doLog(JSON.stringify({
+              hello: 'world',
+              foo: 'bar'
+          }, null, 2));
+      }, 2000);
+    </script>
+
+</body>
+</html>

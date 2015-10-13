@@ -1,0 +1,9 @@
+{
+    /* redis hash group (Like Firebase Projects) */
+    "projects": [
+        {
+            "name": "theverge",
+            "description": "http://www.theverge.com RSS sample data"
+        }
+    ]
+}
