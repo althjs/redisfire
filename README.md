@@ -1,13 +1,12 @@
 # RedisFire
 RedisFire is not related with FireBase.
 But RedisFire provides very similar features like FireBase.
-()
 
 ## Features
-* REST api
+* RESTful apis
 * Realtime notifications for CURD actions
 * JSON import/export
-* NO-SQL
+* Schema free
 
 ## Installation
   ```bash
@@ -29,7 +28,8 @@ But RedisFire provides very similar features like FireBase.
   # Examples:
   $ redisfire-import --help  # show help
   $ redisfire-import test.json testProject  # import test.json to testProject
-  // after import, check http://localhost:3000/rest/testProject
+  // after import, edit redisfire-conf.json
+  // and check http://localhost:3000/rest/testProject
   ```
 
 ## REST
@@ -43,7 +43,7 @@ But RedisFire provides very similar features like FireBase.
   curl http://localhost:3000/rest/theverge/feed/entry/0/content
   ```
 
-* POST - create;
+* POST - create
   ```bash
   # get single item
   curl http://localhost:3000/rest/theverge/feed/entry/0/content
@@ -100,6 +100,9 @@ But RedisFire provides very similar features like FireBase.
 > "_sampe_data" folder to "../node_modules/_sample_data"
 ```
 
+## License
+* The MIT License (MIT)
+* http://opensource.org/licenses/MIT
 
 ## TBD
 * Authentication
