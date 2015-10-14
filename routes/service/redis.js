@@ -17,12 +17,13 @@ require('../../utils/socket.io-helper').get_socket_io().then(function(_io) {
 
       io.emit('hi', 'everyone!');
 
-      _redis.doMonitor(function(err, res) {
-          console.log("MONITOR: Entering monitoring mode.");
-      }, function(time, args) {
-          console.log('MONITOR: ' + time + ": " + args[0]);
-          io.emit('redis', JSON.stringify(args, null,2));
-      });
+    });
+
+    _redis.doMonitor(function(err, res) {
+        console.log("MONITOR: Entering monitoring mode.");
+    }, function(time, args) {
+        console.log('MONITOR: ' + time + ": " + args[0]);
+        io.emit('redis', JSON.stringify(args, null,2));
     });
 });
 

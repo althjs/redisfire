@@ -47,11 +47,12 @@ destDir = require('path').join(__dirname + './../../../static');
 console.log('2. ' + srcDir + ' to ' + destDir);
 copyRecursiveSync(srcDir, destDir);
 
+/*
 srcDir = require('path').join(__dirname + './../_sample_data');
 destDir = require('path').join(__dirname + './../../../_sample_data');
 console.log('3. ' + srcDir + ' to ' + destDir);
 copyRecursiveSync(srcDir, destDir);
-
+*/
 
 console.log('@@ IMPORT demo JSON to RedisFire >>>>>>>>>>>>>>>>>>>>>>>>>>>>');
 

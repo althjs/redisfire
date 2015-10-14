@@ -26,6 +26,16 @@ app.set('view engine', 'jade');
 
 // app.set('views', path.join(__dirname, './'));
 
+/**
+ * inject livereload
+ */
+if (app.get('env') === 'development') {
+  try {
+    app.use(require('connect-livereload-safe')());
+  } catch(e) {
+  }
+
+}
 
 var staticDir = path.join(__dirname + (/node_modules/.test(__dirname) ? './../../static' : './../static'));
 
