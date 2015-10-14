@@ -1,6 +1,6 @@
 {
   "name": "redisfire",
-  "version": "0.0.2",
+  "version": "0.0.11",
   "author": "Jongsoon Park <althjs@gmail.com>",
   "scripts": {
     "start": "node ./bin/www",
