@@ -3,7 +3,7 @@ Redisfire is realtime memory DB.
 
 Let's make Firebase features using Express, Socket.io, Redis and other powerful opensources.
 
-> NOTE: Redisfire is not related with Firebase.
+> Redisfire is not related with Firebase.
 > But Redisfire provides very similar features like Firebase.
 
 
@@ -96,6 +96,12 @@ curl -i \
 # get result again
 curl http://localhost:3000/rest/theverge/feed/entry/0
 ```
+
+## CURD realtime notifications
+* It's developed with socket.io.
+* DEMO:
+  http://localhost:3000/
+
 
 ## Caution
 * do not install globally

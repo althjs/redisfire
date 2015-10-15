@@ -1,6 +1,6 @@
 {
   "name": "redisfire",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "author": "Jongsoon Park <althjs@gmail.com>",
   "scripts": {
     "start": "node ./bin/www",
@@ -37,13 +37,13 @@
     "redis": "2.1.*",
     "jade": "1.*"
   },
-  "description": "RedisFire is not related with FireBase. But RedisFire provides very similar features like FireBase.",
+  "description": "Redisfire is not related with Firebase. But Redisfire provides very similar features like Firebase.",
   "bugs": {
     "url": "https://github.com/althjs/redisfire/issues"
   },
   "main": "bin/www",
   "keywords": [
-    "RedisFire",
+    "Redisfire",
     "Firebase",
     "Realtime"
   ]

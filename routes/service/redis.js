@@ -59,12 +59,13 @@ function restGET(projectName, path) {
                     len = targetKey.length;
 
                 for (i=0; i<len; i++) {
-                    // console.log('@@@@@@ targetKey[' + i + ']:' + targetKey[i]);
+                    //console.log('@@@@@@ targetKey[' + i + ']:' + targetKey[i], (datas.length || ''), JSON.stringify(datas));
 
                     if (datas[targetKey[i]]) {  // 객체가 바로 있는경우 객체 할당
+                        //console.log('객체가 바로 있는경우 할당 key:' + targetKey[i]);
                         datas = datas[targetKey[i]];
                     } else if (datas.length === 1 && targetKey[i] !=='') { // 배열이고, length 가 1인경우 0번째 배열 할당
-                        i++;
+                        if (i===0) { i++; }
                         datas = datas[0];
                     }
                 }
