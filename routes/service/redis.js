@@ -8,6 +8,74 @@ var _redis = require("../../utils/redis-helper"),
 var io;
 var cache = _redis.cache;
 
+
+function setCURD(socket) {
+
+  var pathToRedisKey = function(path) {
+    path = path.replace(/^\/rest\//, '').replace(/\//g, '>');
+    path += (path.substring(path.length-1, path.length) === '>' ? '' : '>');
+    return path;
+  };
+
+  var getProjectName = function(path) {
+    return path.split('/')[0].replace('@', '');
+  };
+
+  socket.on('GET', function (path, params) {
+    var projectName = getProjectName(path);
+    path = pathToRedisKey(path);
+
+    restGET(projectName, path).then(function(datas) {
+      socket.emit('redisfire', 'GET', successCallback(datas), params || null);
+    }, function (err) {
+      socket.emit('redisfire', 'GET', errorCallback(err), params || null);
+    });
+  });
+
+  socket.on('PUT', function (path, body, params) {
+    var projectName = getProjectName(path);
+    var req = {
+      body: body,
+      headers: {'content-type': 'application/json'}
+    };
+    path = pathToRedisKey(path);
+
+    restPUT(projectName, path, req).then(function(datas) {
+      socket.emit('redisfire', 'PUT', successCallback(datas), params || null);
+    }, function (err) {
+      socket.emit('redisfire', 'PUT', errorCallback(err), params || null);
+    });
+  });
+
+
+  socket.on('POST', function (path, body, params) {
+    var projectName = getProjectName(path);
+    var req = {
+      body: body,
+      headers: {'content-type': 'application/json'}
+    };
+    path = pathToRedisKey(path);
+
+    restPOST(projectName, path, req).then(function(datas) {
+      socket.emit('redisfire', 'POST', successCallback(datas), params || null);
+    }, function (err) {
+      socket.emit('redisfire', 'POST', errorCallback(err), params || null);
+    });
+  });
+
+
+  socket.on('DELETE', function (path, params) {
+    var projectName = getProjectName(path);
+    path = pathToRedisKey(path);
+
+    restDELETE(projectName, path).then(function(datas) {
+      socket.emit('redisfire', 'DELETE', successCallback(datas), params || null);
+    }, function (err) {
+      socket.emit('redisfire', 'DELETE', errorCallback(err), params || null);
+    });
+  });
+}
+
 require('../../utils/socket.io-helper').get_socket_io().then(function(_io) {
     // console.log('redis.js 에서 가져온 socket.io 객체:', _io);
 
@@ -16,6 +84,7 @@ require('../../utils/socket.io-helper').get_socket_io().then(function(_io) {
       console.log('REDIS: someone connected to redis group');
 
       io.emit('hi', 'everyone!');
+      setCURD(socket);
 
     });
 
@@ -519,7 +588,7 @@ function restPUT(projectName, key, req) {
 /**
  * DELETE
  */
-function restDELETE (projectName, key, req) {
+function restDELETE (projectName, key) {
     var deferred = $q.defer();
 
         // 값이 있는지 체크
@@ -614,7 +683,7 @@ exports.rest = function (req, res) {
 
             break;
         case 'DELETE': // DELETE
-            restDELETE(projectName, path, req).then(
+            restDELETE(projectName, path).then(
                 function (data) { res.send(successCallback(data)); },
                 function (err) { res.send(errorCallback(err)); }
             );

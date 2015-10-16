@@ -3,7 +3,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>로그창</title>
+    <title>CURD Log</title>
 
 <style>
 body { padding: 0; }
@@ -19,6 +19,10 @@ pre.redis {
     -webkit-animation-name: show_redis;
     background-color: #c1e0c5;
 }
+pre.curd {
+    -webkit-animation-name: show_curd;
+    background-color: #ede59e;
+}
 
 @-webkit-keyframes show {
   from {background-color: #f7b8b8}
@@ -28,6 +32,11 @@ pre.redis {
 @-webkit-keyframes show_redis {
   from {background-color: #f7b8b8}
   to { background-color: #c1e0c5}
+}
+
+@-webkit-keyframes show_curd {
+  from {background-color: #f7b8b8}
+  to { background-color: #ede59e}
 }
 
 </style>
@@ -55,13 +64,25 @@ pre.redis {
         // socket.emit('my other event', { my: 'data' });
       });
 
-
-      socket.on('redis', function (data) {
-        doLog(data, 'redis');
+      socket.on('redisfire', function(eventType, res, params) {
+        var msg = eventType + ' response:\n' + JSON.stringify(res, null, 2);
+        if (params) {
+          msg+='\nparams:' + JSON.stringify(params, null, 2);
+        }
+        doLog(msg, 'curd');
       });
 
-      setTimeout(function() {
+      socket.on('redis', function (data) {
+        doLog('redis MONITOR:\n' + data, 'redis');
+      });
 
+      // CURD over socket
+      // socket.emit('GET', 'theverge/feed/entry/2/author/name', {foo:'bar'});
+      // socket.emit('POST', 'theverge/feed/entry/2/author/name2', {hello: 'WORLD'}, {foo:'bar'});
+      // socket.emit('DELETE', 'theverge/feed/entry/2/author/name2', {foo:'bar'});
+      // socket.emit('PUT', 'theverge/feed/entry/2/author', {name: 'Jongsoon'}, {foo:'bar'});
+
+      setTimeout(function() {
           doLog(JSON.stringify({
               hello: 'world',
               foo: 'bar'

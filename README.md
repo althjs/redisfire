@@ -102,6 +102,20 @@ curl http://localhost:3000/rest/theverge/feed/entry/0
 * DEMO:
   http://localhost:3000/
 
+## CURD over socket.io
+* 1. open http://localhost:3000/
+* 2. try js code on the developer console.
+
+```javascript
+// GET
+socket.emit('GET', 'theverge/feed/entry/2/author/name', {foo:'bar'});
+// CREATE (POST)
+socket.emit('POST', 'theverge/feed/entry/2/author/name2', {hello: 'WORLD'}, {foo:'bar'});
+ // DELETE
+socket.emit('DELETE', 'theverge/feed/entry/2/author/name2', {foo:'bar'});
+// PUT
+socket.emit('PUT', 'theverge/feed/entry/2/author', {name: 'Jongsoon'}, {foo:'bar'});
+```
 
 ## Caution
 * do not install globally
@@ -113,6 +127,15 @@ curl http://localhost:3000/rest/theverge/feed/entry/0
 // Redisfire realtime event demo (http://localhost:3000/) - can delete
 > "static" folder to "node_modules/../statrc"
 ```
+
+## Versio HIstory
+* 0.0.1
+  * first publish
+* ~ 0.0.12
+  * bugfix
+* 0.0.13
+  * feature fdd:
+    * CURD over socket
 
 ## License
 * The MIT License (MIT)
