@@ -141,6 +141,7 @@ socket.emit('PUT', 'theverge/feed/entry/2/author', {name: 'Jongsoon'}, {foo:'bar
     * array PUT bug
   * change:
     * redis sockio.io event return type String to JSON
+    * support boolean type value
 
 ## License
 * The MIT License (MIT)

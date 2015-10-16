@@ -56,6 +56,17 @@ function objectToJSON(datas) {
 
 exports.objectToJSON = objectToJSON;
 
+function getRealValue(str) {
+  if (str.length === 2) {
+    if (str === '@1') {
+      return true;
+    } else if(str === '@0') {
+      return false;
+    }
+  }
+  return str;
+}
+
 /**
  * hashToJSON 2차원 redis hash 구조를 JSON 구조로 변경하는 펑션
  * @param  {object} hash redis 로 부터 받은 key/value hash 구조
@@ -86,7 +97,7 @@ function hashToJSON(hash) {
 
                 if (len - 1 === i) {
                     //console.log('XXXX', hash[key]);
-                    ref[t[i]] = hash[key];
+                    ref[t[i]] = getRealValue(hash[key]);
                 } else {
                     ref[t[i]] = {};
                     ref = ref[t[i]];
@@ -95,7 +106,7 @@ function hashToJSON(hash) {
             } else {
                 if (len - 1 === i) {
                     //console.log('XXXX', hash[key]);
-                    ref[t[i]] = hash[key];
+                    ref[t[i]] = getRealValue(hash[key]);
                 } else {
                     ref = ref[t[i]];
                 }
@@ -142,6 +153,9 @@ function objectToHashKeyPair (targetObj, pathPrefix) {
     var deferred = $q.defer();
     var hash = {};
     var parseSub = function (val, key, k) {
+      if (typeof val === 'boolean') {
+        val = '@' + (val ? 1 : 0);
+      }
     	if (_.isNumber(val)) {
             // keys.push(key + '>' + k, val);
             hash[key + '>' + k] = val;
