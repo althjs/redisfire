@@ -136,6 +136,11 @@ socket.emit('PUT', 'theverge/feed/entry/2/author', {name: 'Jongsoon'}, {foo:'bar
 * 0.0.13
   * feature fdd:
     * CURD over socket
+* 0.0.14
+  * bugfix:
+    * array PUT bug
+  * change:
+    * redis sockio.io event return type String to JSON
 
 ## License
 * The MIT License (MIT)

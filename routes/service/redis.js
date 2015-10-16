@@ -92,7 +92,7 @@ require('../../utils/socket.io-helper').get_socket_io().then(function(_io) {
         console.log("MONITOR: Entering monitoring mode.");
     }, function(time, args) {
         console.log('MONITOR: ' + time + ": " + args[0]);
-        io.emit('redis', JSON.stringify(args, null,2));
+        io.emit('redis', args);
     });
 });
 
@@ -330,7 +330,6 @@ function restPUT(projectName, key, req) {
             body = req.body,
             isBodyArray = _.isArray(body);
 
-
         if (req.headers['content-type'].toLowerCase() !== 'application/json') {
             deferred.reject('content-type is not application/json');
 
@@ -434,9 +433,13 @@ function restPUT(projectName, key, req) {
                                     if (isNew) {
                                         if (!oFinalNew) { oFinalNew = {}; }
 
-                                        tmp = k2.replace(projectName + '>', key);
+                                        if (subRoot.indexOf(projectName + '@') !== -1) { // 최상위 루트가 배열인 경우
+                                            tmp = k2.replace(projectName + '>', key);
+                                        } else {
+                                            tmp = k2;
+                                        }
                                         if (subRoot) {
-                                            // console.log('>>>>>>>> ' + tmp + ' to ' + subRoot);
+                                            //console.log('>>>>>>>> ', tmp + ' to ' + subRoot);
                                             tmp = tmp.replace(subRoot.replace(/@/g,''), subRoot);
                                         }
                                         // console.log('새로운키 추가정보:', tmp);
