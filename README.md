@@ -144,7 +144,11 @@ socket.emit('PUT', 'theverge/feed/entry/2/author', {name: 'Jongsoon'}, {foo:'bar
     * support boolean type value
   * feature:
     * GET request file download support when ".json" postfix included (ex: http://localhost/foo.json)
-
+* 0.0.15
+  * features:
+    * support require('redisfire') - more documentation needed
+  * change:
+ 
 ## License
 * The MIT License (MIT)
 * http://opensource.org/licenses/MIT

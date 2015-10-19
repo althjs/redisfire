@@ -9,70 +9,115 @@ var io;
 var cache = _redis.cache;
 
 
+var pathToRedisKey = function(path) {
+  path = path.replace(/^\/rest\//, '').replace(/\//g, '>');
+  path += (path.substring(path.length-1, path.length) === '>' ? '' : '>');
+  return path;
+};
+
+var getProjectName = function(path) {
+  return path.split('/')[0].replace('@', '');
+};
+
+function ioGET (path, params, socket) {
+  var deferred = $q.defer();
+  var projectName = getProjectName(path);
+  path = pathToRedisKey(path);
+
+  restGET(projectName, path).then(function(datas) {
+    deferred.resolve(datas);
+  }, function (err) {
+    deferred.reject(err);
+  });
+
+  return deferred.promise;
+}
+
+function ioPUT (path, body, params, socket) {
+  var deferred = $q.defer();
+  var projectName = getProjectName(path);
+  var req = {
+    body: body,
+    headers: {'content-type': 'application/json'}
+  };
+  path = pathToRedisKey(path);
+
+  restPUT(projectName, path, req).then(function(datas) {
+    deferred.resolve(datas);
+  }, function (err) {
+    deferred.reject(err);
+  });
+
+  return deferred.promise;
+}
+
+function ioPOST (path, body, params, socket) {
+  var deferred = $q.defer();
+  var projectName = getProjectName(path);
+  var req = {
+    body: body,
+    headers: {'content-type': 'application/json'}
+  };
+
+
+  path = pathToRedisKey(path);
+
+  console.log('@@ SOCKET METHOD: POST', 'REDIS PATH:', path, 'REDIS PROJECT:', projectName);
+
+  restPOST(projectName, path, req).then(function(datas) {
+    deferred.resolve(datas);
+  }, function (err) {
+    deferred.reject(err);
+  });
+
+  return deferred.promise;
+}
+
+function ioDELETE (path, params, socket) {
+  var projectName = getProjectName(path);
+  path = pathToRedisKey(path);
+
+  restDELETE(projectName, path).then(function(datas) {
+    socket.emit('redisfire', 'DELETE', successCallback(datas), params || null);
+  }, function (err) {
+    socket.emit('redisfire', 'DELETE', errorCallback(err), params || null);
+  });
+}
+
+exports.ioGET = ioGET;
+exports.ioPOST = ioPOST;
+exports.ioPUT = ioPUT;
+exports.ioDELETE = ioDELETE;
+
 function setCURD(socket) {
 
-  var pathToRedisKey = function(path) {
-    path = path.replace(/^\/rest\//, '').replace(/\//g, '>');
-    path += (path.substring(path.length-1, path.length) === '>' ? '' : '>');
-    return path;
-  };
-
-  var getProjectName = function(path) {
-    return path.split('/')[0].replace('@', '');
-  };
-
   socket.on('GET', function (path, params) {
-    var projectName = getProjectName(path);
-    path = pathToRedisKey(path);
-
-    restGET(projectName, path).then(function(datas) {
+    ioGET(path, params).then(function(datas) {
       socket.emit('redisfire', 'GET', successCallback(datas), params || null);
-    }, function (err) {
+    }, function(err) {
       socket.emit('redisfire', 'GET', errorCallback(err), params || null);
     });
   });
 
   socket.on('PUT', function (path, body, params) {
-    var projectName = getProjectName(path);
-    var req = {
-      body: body,
-      headers: {'content-type': 'application/json'}
-    };
-    path = pathToRedisKey(path);
-
-    restPUT(projectName, path, req).then(function(datas) {
+    ioPUT(path, body, params).then(function(datas) {
       socket.emit('redisfire', 'PUT', successCallback(datas), params || null);
-    }, function (err) {
+    }, function(err) {
       socket.emit('redisfire', 'PUT', errorCallback(err), params || null);
     });
   });
 
-
   socket.on('POST', function (path, body, params) {
-    var projectName = getProjectName(path);
-    var req = {
-      body: body,
-      headers: {'content-type': 'application/json'}
-    };
-    path = pathToRedisKey(path);
-
-    restPOST(projectName, path, req).then(function(datas) {
+    ioPOST(path, body, params).then(function(datas) {
       socket.emit('redisfire', 'POST', successCallback(datas), params || null);
-    }, function (err) {
+    }, function(err) {
       socket.emit('redisfire', 'POST', errorCallback(err), params || null);
     });
   });
 
 
   socket.on('DELETE', function (path, params) {
-    var projectName = getProjectName(path);
-    path = pathToRedisKey(path);
-
-    restDELETE(projectName, path).then(function(datas) {
-      socket.emit('redisfire', 'DELETE', successCallback(datas), params || null);
-    }, function (err) {
-      socket.emit('redisfire', 'DELETE', errorCallback(err), params || null);
-    });
+    ioDELETE(path, params, socket);
   });
 }
 
@@ -96,6 +141,15 @@ require('../../utils/socket.io-helper').get_socket_io().then(function(_io) {
     });
 });
 
+exports.getIO = function() {
+  var deferred = $q.defer();
+
+  require('../../utils/socket.io-helper').get_socket_io().then(function(_io) {
+    deferred.resolve(_io)
+  });
+
+  return deferred.promise;
+}
 
 
 /**
@@ -214,7 +268,7 @@ function restPOST(projectName, key, req) {
 
                 if (!t) {   // 해당키에 대한 요소를 찾지 못함.
 
-                    if (key.split('>').length === 3) {  // 최사위 요소님
+                    if (key.split('>').length === 3) {  // 최상위 요소님
                         var newTarget = _key.split('>')[0] + '>' + key.split('>')[1];
 
                         _helper.objectToHashKeyPair(body, newTarget).then(function(newHash) {

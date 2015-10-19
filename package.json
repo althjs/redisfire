@@ -41,7 +41,7 @@
   "bugs": {
     "url": "https://github.com/althjs/redisfire/issues"
   },
-  "main": "bin/www",
+  "main": "lib/index",
   "keywords": [
     "redisfire",
     "firebase",
