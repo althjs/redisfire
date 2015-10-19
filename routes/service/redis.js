@@ -435,13 +435,16 @@ function restPUT(projectName, key, req) {
 
                                         if (subRoot.indexOf(projectName + '@') !== -1) { // 최상위 루트가 배열인 경우
                                             tmp = k2.replace(projectName + '>', key);
+                                            if (subRoot) {
+                                              tmp = tmp.replace(subRoot.replace(/@/g,''), subRoot);
+                                            }
                                         } else {
                                             tmp = k2;
+                                            if (subRoot) {
+                                              tmp = tmp.replace(projectName, subRoot);
+                                            }
                                         }
-                                        if (subRoot) {
-                                            //console.log('>>>>>>>> ', tmp + ' to ' + subRoot);
-                                            tmp = tmp.replace(subRoot.replace(/@/g,''), subRoot);
-                                        }
+
                                         // console.log('새로운키 추가정보:', tmp);
                                         oFinalNew[tmp] = bodyHash[k2];
                                     }
