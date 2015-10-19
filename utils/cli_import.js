@@ -68,6 +68,9 @@ function HSET(key, val) {
 
 
 function parseSub (val, key, k) {
+  if (typeof val === 'boolean') {
+    val = '@' + (val ? 1 : 0);
+  }
 	if (_.isNumber(val)) {
 		HSET(key + '>' + k, val);
 

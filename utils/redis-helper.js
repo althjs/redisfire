@@ -10,6 +10,8 @@ var redis = require("redis"),
 
 client.on('error', function (err) {
     console.log('Error: ' + err);
+    console.log('Redis connection failed. Please check redis server is running.');
+    process.exit(1);
 });
 
 client.on('connect', function () {
