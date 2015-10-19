@@ -649,15 +649,25 @@ exports.rest = function (req, res) {
     var path,
         projectName;
 
+
+    var downloadFile = false;
+
     if (req.query._pathParam) {
         path = decodeURIComponent(req.query._pathParam).replace(/\//g, '>');
     } else if (req.query.path) {
         path = req.query.path || '';
     } else {
-        path = req._parsedUrl.pathname.replace(/^\/rest\//, '').replace(/\//g, '>');
+        path = req._parsedUrl.pathname;
+
+        if (/.json$/.test(path)) {
+          downloadFile = path.replace(/^\/rest\//, '').replace(/\//g, '_');
+          path = path.replace(/.json$/, '');
+        }
+        path = path.replace(/^\/rest\//, '').replace(/\//g, '>');
     }
 
     console.log('path:' + path);
+
     path = path + (path.substring(path.length-1, path.length) === '>' ? '' : '>');
     projectName = path.substring(0, path.indexOf('>')).replace('@', '');
 
@@ -671,7 +681,15 @@ exports.rest = function (req, res) {
     switch(req.method) {
         case 'GET': // READ
             restGET(projectName, path).then(
-                function (data) { res.send(successCallback(data)); },
+                function (data) {
+                    if (downloadFile) {
+                        res.setHeader('Content-disposition', 'attachment; filename=' + downloadFile);
+                        res.setHeader('Content-type', 'text/plain');
+                        res.send(JSON.stringify(data, null,2));
+                    } else {
+                        res.send(successCallback(data));
+                    }
+                 },
                 function (err) { res.send(errorCallback(err)); }
             );
             break;

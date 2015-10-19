@@ -132,7 +132,7 @@ socket.emit('PUT', 'theverge/feed/entry/2/author', {name: 'Jongsoon'}, {foo:'bar
 * 0.0.1
   * first publish
 * ~ 0.0.12
-  * bugfix
+  * bugfixf
 * 0.0.13
   * feature fdd:
     * CURD over socket
@@ -142,6 +142,8 @@ socket.emit('PUT', 'theverge/feed/entry/2/author', {name: 'Jongsoon'}, {foo:'bar
   * change:
     * redis sockio.io event return type String to JSON
     * support boolean type value
+  * feature:
+    * GETa request file downloading when ".json" postfix included (ex: http://localhost/foo.json")
 
 ## License
 * The MIT License (MIT)
