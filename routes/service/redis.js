@@ -247,9 +247,9 @@ function restPOST(projectName, key, req) {
 
             try {
 
-              // console.log('상위요소가 배열인치 체크:', targetKey);
-                // STEP2-1. 상위 요소가 배열인지 아닌지 체크
+                // console.log('상위요소가 배열인치 체크:', targetKey);
                 targetKey = targetKey.splice(0, targetKey.length-2).join('>');
+                targetKey = getPathWithPostfix(targetKey);
 
                 var path = key,
                     t;
@@ -271,12 +271,15 @@ function restPOST(projectName, key, req) {
                     break;
                 }
 
+                targetKey = targetKey.replace(/>$/,'');
+
                 var max = 0;
                 // console.log("XXXXX: " + targetKey);
 
                 if (!t) {   // 해당키에 대한 요소를 찾지 못함.
 
                     if (key.split('>').length === 3) {  // 최상위 요소임
+                        console.log('해당키에 대한 요소를 찾지 못함', body, newTarget, key, targetKey);
                         var newTarget = _key.split('>')[0] + '>' + key.split('>')[1];
 
                         _helper.objectToHashKeyPair(body, newTarget).then(function(newHash) {
@@ -347,7 +350,7 @@ function restPOST(projectName, key, req) {
 
                     });
                 } else {
-                    // console.log('XXX', t, targetKey);
+                    // console.log('XXX', t, targetKey, t.replace(targetKey, '').substring(0,1));
                     // var l = path.split('>'),
                     //     tmp = t.split('>'),
                     //     newTarget = tmp.splice(0, l.length-2).join('>') + '>' + l[2];
@@ -713,6 +716,19 @@ function restDELETE (projectName, key) {
 }
 
 /**
+ * [getPathWithPostfix description]
+ * @param  {[type]} path [description]
+ * @return {[type]}      [description]
+ * @examples
+ * getPathWithPostfix('foo>bar')
+ * // => foo>bar>
+ * getPathWidthPostfix('foo>bar>')
+ * // => foo>bar>
+ */
+function getPathWithPostfix (path) {
+  return path + (path.substring(path.length-1, path.length) === '>' ? '' : '>');
+}
+/**
  * @examples
  * // GET
  * http://localhost:10000/service/redis/rest?path=test-libs>강남구>library
@@ -743,7 +759,7 @@ exports.rest = function (req, res) {
 
     console.log('path:' + path);
 
-    path = path + (path.substring(path.length-1, path.length) === '>' ? '' : '>');
+    path = getPathWithPostfix(path);
     projectName = path.substring(0, path.indexOf('>')).replace('@', '');
 
     console.log('@@ METHOD:', req.method, 'REDIS PATH:', path, 'REDIS PROJECT:', projectName);
