@@ -10,6 +10,7 @@ var cache = _redis.cache;
 
 
 var pathToRedisKey = function(path) {
+  console.log('~~ pathToRedisKey path:' + path);
   path = path.replace(/^\/rest\//, '').replace(/\//g, '>');
   path += (path.substring(path.length-1, path.length) === '>' ? '' : '>');
   return path;
@@ -173,11 +174,13 @@ function restGET(projectName, path) {
         try {
             var datas = _helper.hashToJSON(hash);
 
-            // console.log(JSON.stringify(datas, null,2));
+            //console.log('hashToJSON 결과:', JSON.stringify(datas, null,2));
             _helper.objectToJSON(datas);  // 하위요소까지 배열은 배열로 치환
 
             setTimeout(function() {
+                // console.log('objectToJSON 결과:', JSON.stringify(datas, null,2));
                 datas = datas[projectName];
+                // console.log('XXX', datas, targetKey);
                 var i,
                     len = targetKey.length;
 
@@ -222,6 +225,10 @@ function restPOST(projectName, key, req) {
         deferred.reject('too risky request (POST method는 최상위 요소에서 허용되지 않습니다. 입력하고자 하는 하위요소 키와함께 요청하세요.)');
     } else {
 
+      // CHECK:  /^chata(@|)>msgs(@|)>/.test("chata>msgs@>0>username>")
+      // msgs@ (배열) 로 저장되어 있는데, /chata/msgs {"foo":"bar"} 로 요청온 경우 PUT으로 위임되어 삭제되어버림.
+      // 어떤게 맞는지 몰겠다 ㅠㅠ POST 인 경우는 매칭되더라도 배열여부를 다시 체크해야할것 같음
+
         _redis.redisHGET(projectName, key).then(function (hash) {   // STEP1. 데이터 있는지 체크
             var datas = _helper.hashToJSON(hash);
             console.log('restPOST 기존 데이터가 있어서 restPUT 으로 위임');
@@ -240,6 +247,7 @@ function restPOST(projectName, key, req) {
 
             try {
 
+              // console.log('상위요소가 배열인치 체크:', targetKey);
                 // STEP2-1. 상위 요소가 배열인지 아닌지 체크
                 targetKey = targetKey.splice(0, targetKey.length-2).join('>');
 
@@ -254,7 +262,7 @@ function restPOST(projectName, key, req) {
 
                 for (i=0; i<len; i++) {
                     _key = cc[i];
-                    // console.log(_key);
+                    // console.log(pathRegex, 'vs', _key);
                     if (!pathRegex.test(_key + '>')) {   // 비교 시 실제 키에 > 를 강제로 붙여줌!
                         continue;
                     }
@@ -268,7 +276,7 @@ function restPOST(projectName, key, req) {
 
                 if (!t) {   // 해당키에 대한 요소를 찾지 못함.
 
-                    if (key.split('>').length === 3) {  // 최상위 요소님
+                    if (key.split('>').length === 3) {  // 최상위 요소임
                         var newTarget = _key.split('>')[0] + '>' + key.split('>')[1];
 
                         _helper.objectToHashKeyPair(body, newTarget).then(function(newHash) {
@@ -280,9 +288,12 @@ function restPOST(projectName, key, req) {
                                 // deferred.resolve(newHash);
                                 _redis.redisHMSET(projectName, key, newHash).then(function(o) {
                                     console.log('WOW POST CREATE SUCCESS:', JSON.stringify(o,null,2));
-                                    deferred.resolve(newHash);
 
-                                    _redis.redisHKEYS(projectName);    // 신귫 추가 했으니 키를 업데이트 해줌
+                                    for (k2 in newHash) {
+                                      cache[projectName].push(k2);
+                                    }
+                                    deferred.resolve(newHash);
+                                    //_redis.redisHKEYS(projectName);    // 신귫 추가 했으니 키를 업데이트 해줌
                                 }, function(err) {
                                     deferred.reject(err);
                                 });
@@ -310,6 +321,7 @@ function restPOST(projectName, key, req) {
 
 
                     var newTarget = projectName + '@>' + (max+1);
+                    // console.log('요기???' , newTarget, JSON.stringify(newTarget));
                     _helper.objectToHashKeyPair(body, newTarget).then(function(newHash) {
                         try {
                             var tmp,
@@ -318,9 +330,13 @@ function restPOST(projectName, key, req) {
 
                             _redis.redisHMSET(projectName, key, newHash).then(function(o) {
                                 console.log('WOW POST CREATE SUCCESS:', JSON.stringify(o,null,2));
-                                deferred.resolve(newHash);
 
-                                _redis.redisHKEYS(projectName);    // 신귫 추가 했으니 키를 업데이트 해줌
+                                for (k2 in newHash) {
+                                  cache[projectName].push(k2);
+                                }
+
+                                deferred.resolve(newHash);
+                                //_redis.redisHKEYS(projectName);    // 신귫 추가 했으니 키를 업데이트 해줌
                             }, function(err) {
                                 deferred.reject(err);
                             });
@@ -331,7 +347,7 @@ function restPOST(projectName, key, req) {
 
                     });
                 } else {
-
+                    // console.log('XXX', t, targetKey);
                     // var l = path.split('>'),
                     //     tmp = t.split('>'),
                     //     newTarget = tmp.splice(0, l.length-2).join('>') + '>' + l[2];
@@ -343,14 +359,18 @@ function restPOST(projectName, key, req) {
                             var tmp,
                                 k2;
 
-                            console.log('create newHash', newHash);
+                            console.log('create newHash (오브젝트)', newHash);
 
                             // deferred.resolve(newHash);
                             _redis.redisHMSET(projectName, key, newHash).then(function(o) {
                                 console.log('WOW POST CREATE SUCCESS:', JSON.stringify(o,null,2));
-                                deferred.resolve(newHash);
 
-                                _redis.redisHKEYS(projectName);    // 신귫 추가 했으니 키를 업데이트 해줌
+                                for (k2 in newHash) {
+                                  cache[projectName].push(k2);
+                                }
+
+                                deferred.resolve(newHash);
+                                //_redis.redisHKEYS(projectName);    // 신귫 추가 했으니 키를 업데이트 해줌
                             }, function(err) {
                                 deferred.reject(err);
                             });
@@ -487,17 +507,18 @@ function restPUT(projectName, key, req) {
                                     if (isNew) {
                                         if (!oFinalNew) { oFinalNew = {}; }
 
-                                        if (subRoot.indexOf(projectName + '@') !== -1) { // 최상위 루트가 배열인 경우
-                                            tmp = k2.replace(projectName + '>', key);
-                                            if (subRoot) {
-                                              tmp = tmp.replace(subRoot.replace(/@/g,''), subRoot);
-                                            }
-                                        } else {
+                                        // if (subRoot.indexOf(projectName + '@') !== -1) { // 최상위 루트가 배열인 경우
+                                        //     tmp = k2.replace(projectName + '>', key);
+                                        //     if (subRoot) {
+                                        //       tmp = tmp.replace(subRoot.replace(/@/g,''), subRoot);
+                                        //     }
+                                        // } else {
                                             tmp = k2;
-                                            if (subRoot) {
+                                            console.log('최상위 루트가 배열이 아닌경우', tmp, subRoot);
+                                            if (subRoot && !_.isArray(body)) {
                                               tmp = tmp.replace(projectName, subRoot);
                                             }
-                                        }
+                                        // }
 
                                         // console.log('새로운키 추가정보:', tmp);
                                         oFinalNew[tmp] = bodyHash[k2];
