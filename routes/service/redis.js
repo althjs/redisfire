@@ -3,14 +3,15 @@
 var _redis = require("../../utils/redis-helper"),
     _ = require("lodash"),
     $q = require("q"),
-    _helper = require("../../utils/helper");
+    _helper = require("../../utils/helper"),
+    md5 = require('md5');
 
 var io;
 var cache = _redis.cache;
 
 
 var pathToRedisKey = function(path) {
-  console.log('~~ pathToRedisKey path:' + path);
+  //console.log('pathToRedisKey path:' + path);
   path = path.replace(/^\/rest\//, '').replace(/\//g, '>');
   path += (path.substring(path.length-1, path.length) === '>' ? '' : '>');
   return path;
@@ -208,6 +209,10 @@ function restGET(projectName, path) {
     return deferred.promise;
 }
 
+
+var arrayMax = {};
+
+
 /**
  * CREATE
  */
@@ -296,7 +301,6 @@ function restPOST(projectName, key, req) {
                                       cache[projectName].push(k2);
                                     }
                                     deferred.resolve(newHash);
-                                    //_redis.redisHKEYS(projectName);    // 신귫 추가 했으니 키를 업데이트 해줌
                                 }, function(err) {
                                     deferred.reject(err);
                                 });
@@ -312,16 +316,28 @@ function restPOST(projectName, key, req) {
 
 
                 } else if (t.replace(targetKey, '').substring(0,1) === '@') {  // 상위요소가 배열이라면 max 인덱스 값으로 INSERT
-                    for (i=0; i<len; i++) {
-                        _key = cc[i];
-                        if (!pathRegex.test(_key + '>')) {   // 비교 시 실제 키에 > 를 강제로 붙여줌!
-                            continue;
-                        }
 
-                        t = parseInt(_key.replace(targetKey+'@>', '').split('>')[0], 10);
-                        max = t > max ? t : max;
+                  var md5Key = md5(t);
+                  console.log('md5Key :', md5Key, t);
+
+                  if (!arrayMax[projectName] || !arrayMax[projectName][md5Key]) {
+                    for (i=0; i<len; i++) {
+                      _key = cc[i];
+                      if (!pathRegex.test(_key + '>')) {   // 비교 시 실제 키에 > 를 강제로 붙여줌!
+                        continue;
+                      }
+
+                      t = parseInt(_key.replace(targetKey+'@>', '').split('>')[0], 10);
+                      max = t > max ? t : max;
                     }
 
+                    if (!arrayMax[projectName]) {
+                      arrayMax[projectName] = {};
+                    }
+                    arrayMax[projectName][md5Key] = max;
+                  } else {
+                    max = ++arrayMax[projectName][md5Key];
+                  }
 
                     var newTarget = projectName + '@>' + (max+1);
                     // console.log('요기???' , newTarget, JSON.stringify(newTarget));
@@ -329,17 +345,16 @@ function restPOST(projectName, key, req) {
                         try {
                             var tmp,
                                 k2;
-                            console.log('create newHash', newHash);
+                            console.log('create newHash (with MAX length: ' + max + ')', newHash);
 
                             _redis.redisHMSET(projectName, key, newHash).then(function(o) {
-                                console.log('WOW POST CREATE SUCCESS:', JSON.stringify(o,null,2));
+                                //console.log('WOW POST CREATE SUCCESS:', JSON.stringify(o,null,2));
 
                                 for (k2 in newHash) {
                                   cache[projectName].push(k2);
                                 }
 
                                 deferred.resolve(newHash);
-                                //_redis.redisHKEYS(projectName);    // 신귫 추가 했으니 키를 업데이트 해줌
                             }, function(err) {
                                 deferred.reject(err);
                             });
@@ -373,7 +388,6 @@ function restPOST(projectName, key, req) {
                                 }
 
                                 deferred.resolve(newHash);
-                                //_redis.redisHKEYS(projectName);    // 신귫 추가 했으니 키를 업데이트 해줌
                             }, function(err) {
                                 deferred.reject(err);
                             });
@@ -388,8 +402,8 @@ function restPOST(projectName, key, req) {
                 }
             } catch(ee) {
 
-                deferred.reject('restPOST ERR 1' + ee.message + ' with ' + projectName + ',' + key + ' targetKey:' + targetKey);
-                console.log('restPOST ERR 1' + ee.message);
+                deferred.reject('restPOST ERR 1: ' + ee.message + ' with ' + projectName + ',' + key + ' targetKey:' + targetKey);
+                console.log('restPOST ERR 1: ' + ee.message);
             }
         });
     }
