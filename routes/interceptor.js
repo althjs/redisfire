@@ -62,7 +62,7 @@ function getServices() {
 }
 
 /**
- * getService 로 가져옥 서비스 중 rest 방식으로 exports 된것들을 찾아 배열로 정의한다
+ * getService 로 가져온 서비스 중 rest 방식으로 exports 된것들을 찾아 배열로 정의한다
  */
 function getRestfulServiceInfo(interceptor_pre) {
     var key,
@@ -72,9 +72,8 @@ function getRestfulServiceInfo(interceptor_pre) {
     for (key in interceptor_pre) {
         if (/\/\:/.test(key)) {
             tmp = key.replace(/\/\:/g, '\/^___^\/');
-            restApis.push(_pathRegExp(key.replace(':', '')));
+            restApis.push(_pathRegExp(key));
         }
-        // mapping.ko[key] = appsMappingConf[key];
     }
     return restApis;
 }
@@ -91,7 +90,6 @@ function getRestfulServiceInfo(interceptor_pre) {
 function init() {
 
     getServices().then(function(service) {
-
         var serviceName,
             tservice,
             tmethod,
@@ -111,10 +109,6 @@ function init() {
         }
 
         interceptor_pre_rest = getRestfulServiceInfo(interceptor_pre);
-
-        //console.log('interceptor_pre', interceptor_pre);
-        //console.log('interceptor_pre_rest', interceptor_pre_rest);
-
     });
 }
 
@@ -122,31 +116,53 @@ init();
 
 
 
+function getRestfulPathParams(keys, reqPath, mapPath) {
+
+  var a1 = reqPath.split('/'),
+    a2 = mapPath.split('/'),
+    params = {},
+    k,
+    i,
+    len = keys.length,
+    j,
+    len2 = a2.length;
+
+  for (i=0; i<len; i++) {
+    k = keys[i].name;
+    for (j=0; j<len2; j++) {
+      if (':' + k === a2[j]) {
+        params[k] = a1[j];
+        break;
+      }
+    }
+  }
+  return params;
+}
+
 /**
  * 요청된 path 정보가 매칭되는 rest api가 있는지 판단하고 있다면 해당 정보를 넘김
  */
 var getMappingForRestfulPath = function(pathName, maps) {
     var i,
-        len = maps.length;
+        len = maps.length,
+        obj,
+        params1,
+        params2,
+        pathParam = {};
 
     for (i=0; i<len; i++) {
-        // console.log(maps[i].regexp);
+        if (maps[i].regexp.test(pathName)) {
+          pathParam = getRestfulPathParams(maps[i].keys, pathName, maps[i].originalPath);
 
-        if (maps[i].regexp.test(pathName.replace('',''))) {
-            //console.log(maps[i].originalPath);
-
-
-            return {
-                originalPath: maps[i].originalPath.substring(0, maps[i].originalPath.length-1),
-                pathParam: pathName.replace(maps[i].originalPath, ''),
-                regexp: maps[i].regexp
-            };
-
+          obj = {
+              originalPath: maps[i].originalPath, //.substring(0, maps[i].originalPath.length-1),
+              pathParam: pathParam,
+              regexp: maps[i].regexp
+          };
+          return obj;
         }
-
     }
     return false;
-
 };
 
 
@@ -179,6 +195,7 @@ function _pathRegExp(path, opts) {
 
     // ret.regexp = new RegExp('^' + path + '$', insensitive ? 'i' : '');
     ret.regexp = new RegExp('^' + path + '', insensitive ? 'i' : '');
+
     return ret;
 }
 
@@ -190,7 +207,6 @@ exports.service = function (req, res, next) {
 
     var restfulPathInfo = getMappingForRestfulPath(pathName, interceptor_pre_rest) || false;
 
-    // console.log('IS REST???', restfulPathInfo);
     if (typeof interceptor_pre[pathName] === 'function') {
 
         try {
@@ -213,6 +229,7 @@ exports.service = function (req, res, next) {
 
         req.query._pathParam = restfulPathInfo.pathParam;
 
+        // console.log('>>>> REST:', pathName, restfulPathInfo);
         try {
             interceptor_pre[pathName](req, res, next).then(function (o) {
                 res.send(o);
@@ -224,12 +241,13 @@ exports.service = function (req, res, next) {
                 });
             });
         } catch(e) {
-            // 윗단에서 res.send 했으면 여기로 옴
-            // console.log('XXXXX' + e.message );
+          // 윗단에서 res.send 했으면 여기로 옴
+          // console.log('XXXXX' + e.message );
         }
 
 
     } else {
+        res.status(404);
         res.send('service not found');
     }
 }

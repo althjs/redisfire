@@ -262,9 +262,11 @@ function redisHDEL(projectName, keys) {
     var deferred = $q.defer();
 
     try {
-        if (!keys) {
+        if (!keys || keys.length === 0) {
             console.log('nothing to delete');
-            deferred.resolve();
+            setTimeout(function() {
+              deferred.resolve();
+            });
         } else {
             var delOne = function (key, projectName) {
                 var df = $q.defer();
@@ -382,3 +384,23 @@ function redisExport(projectName, key) {
     return deferred.promise;
 }
 exports.redisExport = redisExport;
+
+/**
+ * getHashAllData return all hash data
+ * @param  {string} projectName [description]
+ * @return {objecct}             [description]
+ */
+exports.getHashAllData = function(projectName) {
+  var deferred = $q.defer();
+
+  client.hgetall(projectName, function (error, hash) {
+    if (error) {
+      deferred.reject(error);
+      return;
+    }
+
+    deferred.resolve(hash);
+  });
+
+  return deferred.promise;
+}

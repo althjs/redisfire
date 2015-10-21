@@ -158,7 +158,7 @@ exports.getIO = function() {
  * 요건 restful API 지원을 위한 더미 exports
  * 실제로는 아래 exports.rest 가 호출 됨. (관련 로직은 interceptor.js 에서 처리)
  */
-exports['rest/:'] = function (req, res) {
+exports['rest/:param1/:param2'] = function (req, res) {
     res.send('WOW');
 }
 
@@ -317,7 +317,8 @@ function restPOST(projectName, key, req) {
 
                 } else if (t.replace(targetKey, '').substring(0,1) === '@') {  // 상위요소가 배열이라면 max 인덱스 값으로 INSERT
 
-                  var md5Key = md5(t);
+                  var md5Key = md5(t),
+                    realKeyPrefix = t;
                   console.log('md5Key :', md5Key, t);
 
                   if (!arrayMax[projectName] || !arrayMax[projectName][md5Key]) {
@@ -339,8 +340,13 @@ function restPOST(projectName, key, req) {
                     max = ++arrayMax[projectName][md5Key];
                   }
 
-                    var newTarget = projectName + '@>' + (max+1);
-                    // console.log('요기???' , newTarget, JSON.stringify(newTarget));
+                    var pos = targetKey.split('>');
+                    pos = pos[pos.length-1];
+                    pos = realKeyPrefix.indexOf(pos) + pos.length;
+                    realKeyPrefix = realKeyPrefix.substring(0, pos);
+                    var newTarget = realKeyPrefix + '@>' + (max+1);
+
+                    //console.log('요기???' , newTarget, body, targetKey, t, realKeyPrefix);
                     _helper.objectToHashKeyPair(body, newTarget).then(function(newHash) {
                         try {
                             var tmp,
@@ -387,7 +393,9 @@ function restPOST(projectName, key, req) {
                                   cache[projectName].push(k2);
                                 }
 
-                                deferred.resolve(newHash);
+                                setTimeout(function() {
+                                  deferred.resolve(newHash);
+                                })
                             }, function(err) {
                                 deferred.reject(err);
                             });
@@ -779,7 +787,8 @@ exports.rest = function (req, res) {
     console.log('@@ METHOD:', req.method, 'REDIS PATH:', path, 'REDIS PROJECT:', projectName);
 
     if (!projectName) {
-        res.send('NO PROJECT FOUND');
+        res.send(errorCallback('please check usage. (http://npmjs.com/package/redisfire)'));
+        return;
     }
 
     // RESTAPI 참조: http://www.restapitutorial.com/lessons/httpmethods.html
@@ -795,7 +804,10 @@ exports.rest = function (req, res) {
                         res.send(successCallback(data));
                     }
                  },
-                function (err) { res.send(errorCallback(err)); }
+                function (err) {
+                  res.status(404);
+                  res.send(errorCallback(err));
+                }
             );
             break;
         case 'POST': // CREATE
