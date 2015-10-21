@@ -5,7 +5,6 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
-var routes = require('./routes/index');
 var intercepter = require('./routes/interceptor');
 var swig = require('swig');
 var redisfire = require('./routes/service/redis');
@@ -48,8 +47,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(staticDir));
-
-app.use('/', routes);
 
 app.use('/service/*', intercepter.service);
 
