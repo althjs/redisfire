@@ -149,7 +149,7 @@ socket.emit('PUT', 'theverge/feed/entry/2/author', {name: 'Jongsoon'}, {foo:'bar
     * PUT/POST bug fix
   * features:
     * support require('redisfire') - more documentation needed.
-* 0.0.16
+* ~ 0.0.18
   * bugfix & travis ci
  
 ## License

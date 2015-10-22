@@ -1,8 +1,9 @@
 {
   "name": "redisfire",
-  "version": "0.0.16",
+  "version": "0.0.18",
   "author": "Jongsoon Park <althjs@gmail.com>",
   "scripts": {
+    "postinstall": "node utils/postinstall",
     "test": "nyc mocha test/route/basic",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
