@@ -4,8 +4,8 @@ exports.bar = function(req, res) {
   res.send('hi there~');
 }
 
-
-var redisfire = require('redisfire/lib/index'),
+var redisfirePath = (require('fs').existsSync(require('path').join(__dirname + './../lib/index.js')) ? './../lib/index' : 'redisfire/lib/index');
+var redisfire = require(redisfirePath),
   socket,
   projectName = 'redisfire-test';
 
