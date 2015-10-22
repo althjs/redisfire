@@ -37,8 +37,10 @@ if (app.get('env') === 'development') {
 }
 
 var staticDir = path.join(__dirname + (/node_modules/.test(__dirname) ? './../../static' : './../static'));
-
-console.log('@@ staticDir: ' + staticDir);
+if (require('fs').existsSync(require('path').join(__dirname + '/static'))) {
+  staticDir = require('path').join(__dirname + '/static');
+}
+console.log('@@ staticDir: ' + staticDir, app.get('env'));
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));

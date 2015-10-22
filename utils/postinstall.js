@@ -47,6 +47,8 @@ destDir = require('path').join(__dirname + './../../../static');
 console.log('2. ' + srcDir + ' to ' + destDir);
 copyRecursiveSync(srcDir, destDir);
 
+
+
 /*
 srcDir = require('path').join(__dirname + './../_sample_data');
 destDir = require('path').join(__dirname + './../../../_sample_data');
@@ -60,6 +62,17 @@ var exec = require('child_process').exec,
   isWin = /^win/.test(process.platform),
   command;
 
+
+console.log('@@ RENAME default conf & demo files >>>>>>>>>>>>>>>>>>>>>>>>>>>>');
+if (isWin) {
+  fs.renameSync(path.join(__dirname + '.\\..\\conf'), path.join(__dirname + '.\\..\\z_conf'));
+  fs.renameSync(path.join(__dirname + '.\\..\\static'), path.join(__dirname + '.\\..\\z_static'));
+  fs.renameSync(path.join(__dirname + '.\\..\\service'), path.join(__dirname + '.\\..\\z_service'));
+} else {
+  fs.renameSync(path.join(__dirname + './../conf'), path.join(__dirname + './../z_conf'));
+  fs.renameSync(path.join(__dirname + './../static'), path.join(__dirname + './../z_static'));
+  fs.renameSync(path.join(__dirname + './../service'), path.join(__dirname + './../z_service'));
+}
 
 if (isWin) {
   command = require('path').join(__dirname + '.\\..\\..\\.bin\\redisfire-import') + ' .\\_sample_data\\theverge.json theverge';

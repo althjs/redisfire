@@ -4,6 +4,10 @@
         {
             "name": "theverge",
             "description": "http://www.theverge.com RSS sample data"
+        },
+        {
+            "name": "redisfire-test",
+            "description": "redisfire Mocha test project"
         }
     ]
 }

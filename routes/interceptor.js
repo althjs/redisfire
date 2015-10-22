@@ -39,7 +39,7 @@ function getServices() {
     var fs = require('fs'),
         serviceDir;
 
-    if (require('fs').existsSync('./../service')) {
+    if (require('fs').existsSync(require('path').join(__dirname + './../service'))) {
       serviceDir = require('path').join(__dirname + './../service');
     } else {
       serviceDir = require('path').join(__dirname + (/node_modules/.test(__dirname) ? './../../../service' : './../../service'));
