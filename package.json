@@ -3,8 +3,8 @@
   "version": "0.0.15",
   "author": "Jongsoon Park <althjs@gmail.com>",
   "scripts": {
-    "start": "node ./bin/www",
-    "postinstall": "node ./utils/postinstall"
+    "test": "nyc mocha test/route/basic",
+    "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "repository": {
     "type": "git",
@@ -50,5 +50,10 @@
     "socket.io",
     "redis",
     "express"
-  ]
+  ],
+  "devDependencies": {
+    "coveralls": "^2.11.4",
+    "mocha-lcov-reporter": "^1.0.0",
+    "nyc": "^3.2.2"
+  }
 }

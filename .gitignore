@@ -1,3 +1,4 @@
+.nyc_output/*
 *.svn*
 **/dist/*
 *node_modules*

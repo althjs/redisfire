@@ -37,7 +37,13 @@ var interceptor_post = {};
 function getServices() {
     var deferred = require('q').defer();
     var fs = require('fs'),
-        serviceDir = require('path').join(__dirname + (/node_modules/.test(__dirname) ? './../../../service' : './../../service'));
+        serviceDir;
+
+    if (require('fs').existsSync('./../service')) {
+      serviceDir = require('path').join(__dirname + './../service');
+    } else {
+      serviceDir = require('path').join(__dirname + (/node_modules/.test(__dirname) ? './../../../service' : './../../service'));
+    }
 
     console.log('@@ serviceDir:', serviceDir);
     if (fs.existsSync(serviceDir)) {
