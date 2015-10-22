@@ -1,6 +1,6 @@
 {
   "name": "redisfire",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "author": "Jongsoon Park <althjs@gmail.com>",
   "scripts": {
     "test": "nyc mocha test/route/basic",
