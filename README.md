@@ -1,5 +1,7 @@
-# Redisfire
-Redisfire is realtime memory DB.
+Redisfire - realtime memory DB.
+===========================
+[![Build Status](https://travis-ci.org/althjs/redisfire.png)](https://travis-ci.org/althjs/redisfire)
+[![Coverage Status](https://coveralls.io/repos/althjs/redisfire/badge.svg?branch=)](https://coveralls.io/r/althjs/redisfire?branch=)
 
 Let's make Firebase features using Express, Socket.io, Redis and other powerful opensources.
 
@@ -151,7 +153,7 @@ socket.emit('PUT', 'theverge/feed/entry/2/author', {name: 'Jongsoon'}, {foo:'bar
     * support require('redisfire') - more documentation needed.
 * ~ 0.0.18
   * bugfix & travis ci
- 
+
 ## License
 * The MIT License (MIT)
 * http://opensource.org/licenses/MIT
