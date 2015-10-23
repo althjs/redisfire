@@ -1,9 +1,11 @@
 language: node_js
 services:
   - redis-server
+before_script: ./bin/test_ready.sh
 node_js:
   - "0.10"
   - "0.12"
   - "4.0"
   - "iojs"
+
 after_success: npm run coverage
