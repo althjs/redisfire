@@ -1,6 +1,7 @@
 pwd;
+ls -alh ../../;
 ls -alh ../;
 ls -alh;
-cp z_conf conf;
-cp z_static static;
-cp z_service service;
+mv z_conf conf;
+mv z_static static;
+mv z_service service;
