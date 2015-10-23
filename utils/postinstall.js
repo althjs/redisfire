@@ -75,9 +75,9 @@ if (isWin) {
 }
 
 if (isWin) {
-  command = require('path').join(__dirname + '.\\..\\..\\.bin\\redisfire-import') + ' .\\_sample_data\\theverge.json theverge';
+  command = require('path').join(__dirname + '.\\..\\bin\\redisfire-import') + ' .\\_sample_data\\theverge.json theverge';
 } else {
-  command = require('path').join(__dirname + './../../.bin/redisfire-import') + ' ./_sample_data/theverge.json theverge';
+  command = require('path').join(__dirname + './../bin/redisfire-import') + ' ./_sample_data/theverge.json theverge';
 }
 
 console.log('@@ command:', command);
