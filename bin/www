@@ -10,7 +10,6 @@ var http = require('http');
 
 
 
-console.log('isTestMode: ' + app.get('isTestMode'));
 /**
  * Get port from environment and store in Express.
  */
