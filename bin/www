@@ -9,11 +9,12 @@ var debug = require('debug')('server:server');
 var http = require('http');
 
 
+
+console.log('isTestMode: ' + app.get('isTestMode'));
 /**
  * Get port from environment and store in Express.
  */
-
-var port = normalizePort(process.env.PORT || '3000');
+var port = normalizePort((app.get('isTestMode') ? '3001' : process.env.PORT) || '10000');
 app.set('port', port);
 
 /**
@@ -96,3 +97,6 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
+
+
+module.exports = app;

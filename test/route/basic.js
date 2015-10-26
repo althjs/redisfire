@@ -5,7 +5,7 @@ var assert = require('assert');
 var request = require('supertest');
 var winston = require('winston');
 var requireHelper = require('../require_helper');
-var app = requireHelper('app');
+var app = requireHelper('bin/www');
 
 
 describe('Routing', function() {
@@ -140,6 +140,7 @@ describe('Routing', function() {
               throw err;
             }
 
+            console.log(res.res.text);
             // res.res.text.should.equal('service not found');
 
             done();
@@ -677,6 +678,77 @@ describe('Routing', function() {
             done();
           });
       });
+
+    });
+
+    describe('Socket', function() {
+      it('[SOCKET] GET', function (done) {
+        request(app)
+          .get('/service/foo/socket_test')
+          .send()
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+            var data = JSON.parse(res.res.text);
+            (JSON.stringify(data)).should.equal('{"res":{"code":"SUCCESS","data":"Rich McCormick"},"params":{"foo":"bar"}}');
+            done();
+          });
+      });
+
+      it('[SOCKET] POST', function (done) {
+        request(app)
+          .get('/service/foo/socket_test?type=POST')
+          .send()
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+            var data = JSON.parse(res.res.text);
+            (JSON.stringify(data)).should.equal('{"res":{"code":"SUCCESS","data":{"redisfire-test>feed>entry@>2>author>name2>hello":"WORLD"}},"params":{"foo":"bar"}}');
+
+
+            setTimeout(function() {
+              done();
+            }, 500);
+          });
+      });
+
+
+
+      it('[SOCKET] DELETE', function (done) {
+
+        request(app)
+          .get('/service/foo/socket_test?type=DELETE')
+          .send()
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+            var data = JSON.parse(res.res.text);
+            (JSON.stringify(data)).should.equal('{"res":{"code":"SUCCESS","data":1},"params":{"foo":"bar"}}');
+            done();
+          });
+      });
+
+      it('[SOCKET] PUT', function (done) {
+        request(app)
+          .get('/service/foo/socket_test?type=PUT')
+          .send()
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+            var data = JSON.parse(res.res.text);
+            (JSON.stringify(data)).should.equal('{"res":{"code":"SUCCESS","data":{"update":{"redisfire-test>feed>entry@>2>author>name":"Jongsoon"}}},"params":{"foo":"bar"}}');
+            done();
+          });
+      });
+
     });
 
 

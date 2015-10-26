@@ -19,8 +19,8 @@ client.on('connect', function () {
 });
 
 var confDir = require('path').join(__dirname + (/node_modules/.test(__dirname) ? './../../../conf' : './../../conf'));
-// for test
-if (require('fs').existsSync(require('path').join(__dirname + './../conf/redisfire-conf.json'))) {
+
+if (/travis/.test(__dirname)) { // for travis-ci test
   confDir = require('path').join(__dirname + './../conf');
 }
 console.log('@@ confDir: ' + confDir);

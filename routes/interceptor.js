@@ -39,7 +39,7 @@ function getServices() {
     var fs = require('fs'),
         serviceDir;
 
-    if (require('fs').existsSync(require('path').join(__dirname + './../service'))) {
+    if (/(instrument|travis)/.test(__dirname)) {  // Mocha TEST mode
       serviceDir = require('path').join(__dirname + './../service');
     } else {
       serviceDir = require('path').join(__dirname + (/node_modules/.test(__dirname) ? './../../../service' : './../../service'));

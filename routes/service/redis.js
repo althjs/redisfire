@@ -21,7 +21,7 @@ var getProjectName = function(path) {
   return path.split('/')[0].replace('@', '');
 };
 
-function ioGET (path, params, socket) {
+function ioGET (path, params) {
   var deferred = $q.defer();
   var projectName = getProjectName(path);
   path = pathToRedisKey(path);
@@ -35,7 +35,7 @@ function ioGET (path, params, socket) {
   return deferred.promise;
 }
 
-function ioPUT (path, body, params, socket) {
+function ioPUT (path, body, params) {
   var deferred = $q.defer();
   var projectName = getProjectName(path);
   var req = {
@@ -53,7 +53,7 @@ function ioPUT (path, body, params, socket) {
   return deferred.promise;
 }
 
-function ioPOST (path, body, params, socket) {
+function ioPOST (path, body, params) {
   var deferred = $q.defer();
   var projectName = getProjectName(path);
   var req = {
@@ -75,15 +75,18 @@ function ioPOST (path, body, params, socket) {
   return deferred.promise;
 }
 
-function ioDELETE (path, params, socket) {
+function ioDELETE (path, params) {
+  var deferred = $q.defer();
   var projectName = getProjectName(path);
   path = pathToRedisKey(path);
 
   restDELETE(projectName, path).then(function(datas) {
-    socket.emit('redisfire', 'DELETE', successCallback(datas), params || null);
+    deferred.resolve(datas);
   }, function (err) {
-    socket.emit('redisfire', 'DELETE', errorCallback(err), params || null);
+    deferred.resolve(err);
   });
+
+  return deferred.promise;
 }
 
 exports.ioGET = ioGET;
@@ -119,7 +122,11 @@ function setCURD(socket) {
 
 
   socket.on('DELETE', function (path, params) {
-    ioDELETE(path, params, socket);
+    ioDELETE(path, params).then(function(datas) {
+      socket.emit('redisfire', 'DELETE', successCallback(datas), params || null);
+    }, function(err) {
+      socket.emit('redisfire', 'DELETE', errorCallback(err), params || null);
+    });
   });
 }
 

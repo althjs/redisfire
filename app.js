@@ -37,9 +37,17 @@ if (app.get('env') === 'development') {
 }
 
 var staticDir = path.join(__dirname + (/node_modules/.test(__dirname) ? './../../static' : './../static'));
-if (require('fs').existsSync(require('path').join(__dirname + '/static'))) {
+
+/**
+ * check the test env
+ */
+var isTestMode = /(instrument|travis)/.test(__dirname);
+app.set('isTestMode', isTestMode);
+
+if (/travis/.test(__dirname)) { // for travis-ci test
   staticDir = require('path').join(__dirname + '/static');
 }
+
 console.log('@@ staticDir: ' + staticDir, app.get('env'));
 
 // uncomment after placing your favicon in /public
