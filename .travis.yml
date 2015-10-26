@@ -3,11 +3,10 @@ services:
   - redis-server
 before_script: ./bin/test_ready.sh
 node_js:
-  - "0.8.28"
   - "0.10"
   - "0.12"
   - "4.0"
-  - "4.2.1"
+  - "4.2"
   - "iojs"
 
 after_success: npm run coverage
