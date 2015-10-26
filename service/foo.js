@@ -4,7 +4,11 @@ exports.bar = function(req, res) {
   res.send('hi there~');
 };
 
-var redisfirePath = (require('fs').existsSync(require('path').join(__dirname + './../lib/index.js')) ? './../lib/index' : 'redisfire/lib/index');
+var fs = require('fs'),
+  path = require('path');
+
+var redisfirePath = (fs.existsSync(path.join(__dirname + './../lib/index.js')) ? path.join(__dirname + './../lib/index') : path.join(__dirname + '/../redisfire/lib/index'));
+console.log('FOO redisfirePath:', redisfirePath);
 var redisfire = require(redisfirePath),
   projectName = 'redisfire-test',
   socket_client,
@@ -18,7 +22,7 @@ redisfire.getIO().then(function(_io) {
   var socketHost = 'http://localhost:' + (/(instrument|travis)/.test(__dirname) ? '3001' : process.env.PORT) + '/redis';
   socket_client = require('socket.io-client')(socketHost);
   socket_client.on('connect', function(){
-    console.log('FOO SOCKET connected');
+    console.log('FOO SOCKET connected to socketHost:', socketHost);
   });
 });
 
