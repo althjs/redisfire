@@ -5,18 +5,41 @@
 var program = require('commander');
 
 var _fileName,
-  _projectName = {};
+  _projectName = {},
+  _options;
+
+var fs = require('fs'),
+  path = require('path'),
+	_ = require('lodash'),
+  jsonMinify = require("node-json-minify");
+
+var confDir = path.join(__dirname + (/node_modules/.test(__dirname) ? './../../../conf' : './../../conf')),
+  confFile = confDir + '/redisfire-conf.json';
+
+if (/travis/.test(__dirname)) { // for travis-ci test
+  confDir = path.join(__dirname + './../conf');
+  confFile = confDir + '/redisfire-conf.json';
+}
+
+
+var _config = JSON.parse(jsonMinify(fs.readFileSync(confFile, 'UTF-8')));
+
+console.log('@@ redisfire-import confFile:', confFile);
+
 
 program
   .version('0.0.1')
   .usage('<fileName> <projectName>')
   .option('-v --verbose', 'Verbose mode')
+  .option('-d --description <description>', 'project description')
+  .option('-s --save', 'overwrite config file')
   .description('Import JSON file to RedisFire')
-  .action(function(fileName, projectName){
+  .action(function(fileName, projectName, options){
 
     _fileName = fileName;
     _projectName = projectName;
 
+    _options = options || null;
 
     if (typeof _fileName !== 'string' || typeof _projectName !== 'string') {
         program.help();
@@ -39,14 +62,12 @@ program.parse(process.argv);
 
 
 
-var fs = require('fs'),
-	_ = require('lodash');
 
 var redis = require("redis"),
-	client = redis.createClient();
+	client = redis.createClient(require('lodash').clone(_config['redis-client']));
 
 client.on('error', function (err) {
-	console.log('Error: ' + err);
+  program.outputHelp();
   process.exit(1);
 });
 
@@ -56,7 +77,8 @@ client.on('error', function (err) {
 try {
   var orig = fs.readFileSync(_fileName,  {encoding: 'utf-8'});
 } catch(e) {
-  console.log('Error: ' + e.message);
+  console.log(e);
+  program.outputHelp();
   process.exit(1);
 }
 var datas = JSON.parse(orig);
@@ -116,5 +138,42 @@ setTimeout(function() {
 },10)
 
 setTimeout(function() {
-  process.exit(0);
+
+  if (_options.save) {
+
+    var k,
+      isSave = false,
+      projects = _config.projects,
+      i,
+      len = projects.length;
+
+    for (i=0; i<len; i++) {
+      k = projects[i].name;
+      if (k === _projectName) {
+        isSave = true;
+
+        if (typeof _options.description === 'string') {
+          projects[i] = {
+            name: k,
+            description: _options.description
+          }
+          break;
+        }
+      }
+    }
+    if (isSave) {
+      //console.log(JSON.stringify(_config, null, 2));
+
+      fs.writeFile(confFile, JSON.stringify(_config, null, 2), {encoding:'UTF-8'}, function(err) {
+        if (err) throw err;
+        console.log(confFile + ' is updated!');
+        process.exit(0);
+      });
+    } else {
+      process.exit(0);
+    }
+  } else {
+    process.exit(0);
+  }
+
 }, 100);

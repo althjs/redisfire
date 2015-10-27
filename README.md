@@ -1,4 +1,4 @@
-Redisfire - realtime memory DB.
+Redisfire - realtime memory DB Service.
 ===========================
 [![Build Status](https://travis-ci.org/althjs/redisfire.png)](https://travis-ci.org/althjs/redisfire)
 [![Coverage Status](https://coveralls.io/repos/althjs/redisfire/badge.svg?branch=)](https://coveralls.io/r/althjs/redisfire?branch=)
@@ -21,6 +21,29 @@ Let's make Firebase features using Express, Socket.io, Redis and other powerful 
 # 2. install Redisfire
 $ npm install redisfire
 ```
+> if redis server is run with "requirepass" or use other options for redis, add "redis-client" connfig option to "redisfire-conf.json"
+
+```bash
+$ cat conf/redisfire-conf.json
+{
+    "projects": [
+        {
+            "name": "theverge",
+            "description": "http://www.theverge.com RSS sample data"
+        },
+        {
+            "name": "redisfire-test",
+            "description": "redisfire Mocha test project"
+        }
+    ],
+    "redis-client": {
+        "host": "127.0.0.1",
+        "port": "6379",
+        "auth_pass": "your password"
+    }
+}
+```
+
 
 ## CLI
 > redisfire - manage server process
@@ -39,6 +62,9 @@ $ redisfire-import --help  # show help
 $ redisfire-import test.json testProject  # import test.json to testProject
 // after import, edit redisfire-conf.json
 // and check http://localhost:3000/rest/testProject
+
+# if you want to update redisfire-conf.json directly, use -s --save option
+$ redisfire-import foo.json foo -s -d "foo project"
 ```
 
 ## REST
@@ -119,6 +145,8 @@ socket.emit('DELETE', 'theverge/feed/entry/2/author/name2', {foo:'bar'});
 socket.emit('PUT', 'theverge/feed/entry/2/author', {name: 'Jongsoon'}, {foo:'bar'});
 ```
 
+##
+
 ## Caution
 * do not install globally
 * the postinstall script is trying to copy folders below. (that's not working with -g option)
@@ -153,6 +181,9 @@ socket.emit('PUT', 'theverge/feed/entry/2/author', {name: 'Jongsoon'}, {foo:'bar
     * support require('redisfire') - more documentation needed.
 * ~ 0.0.19
   * bugfix & travis ci
+* 0.0.20
+  * improve redisfire-import (--save option added)
+  * add "redis-client" option to redisfire-conf.json
 
 ## License
 * The MIT License (MIT)
@@ -160,9 +191,6 @@ socket.emit('PUT', 'theverge/feed/entry/2/author', {name: 'Jongsoon'}, {foo:'bar
 
 ## TBD
 * Authentication
-* Unit Test
-* CURD over socket
-* improve Redis hash key management
 * ...
 
 

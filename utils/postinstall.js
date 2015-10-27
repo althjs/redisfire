@@ -64,14 +64,16 @@ var exec = require('child_process').exec,
 
 
 console.log('@@ RENAME default conf & demo files >>>>>>>>>>>>>>>>>>>>>>>>>>>>');
-if (isWin) {
-  fs.renameSync(path.join(__dirname + '.\\..\\conf'), path.join(__dirname + '.\\..\\z_conf'));
-  fs.renameSync(path.join(__dirname + '.\\..\\static'), path.join(__dirname + '.\\..\\z_static'));
-  fs.renameSync(path.join(__dirname + '.\\..\\service'), path.join(__dirname + '.\\..\\z_service'));
-} else {
-  fs.renameSync(path.join(__dirname + './../conf'), path.join(__dirname + './../z_conf'));
-  fs.renameSync(path.join(__dirname + './../static'), path.join(__dirname + './../z_static'));
-  fs.renameSync(path.join(__dirname + './../service'), path.join(__dirname + './../z_service'));
+if (!/travis/.test(__dirname)) {
+  if (isWin) {
+    fs.renameSync(path.join(__dirname + '.\\..\\conf'), path.join(__dirname + '.\\..\\z_conf'));
+    fs.renameSync(path.join(__dirname + '.\\..\\static'), path.join(__dirname + '.\\..\\z_static'));
+    fs.renameSync(path.join(__dirname + '.\\..\\service'), path.join(__dirname + '.\\..\\z_service'));
+  } else {
+    fs.renameSync(path.join(__dirname + './../conf'), path.join(__dirname + './../z_conf'));
+    fs.renameSync(path.join(__dirname + './../static'), path.join(__dirname + './../z_static'));
+    fs.renameSync(path.join(__dirname + './../service'), path.join(__dirname + './../z_service'));
+  }
 }
 
 if (isWin) {
