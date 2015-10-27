@@ -161,17 +161,20 @@ setTimeout(function() {
         }
       }
     }
-    if (isSave) {
-      //console.log(JSON.stringify(_config, null, 2));
 
-      fs.writeFile(confFile, JSON.stringify(_config, null, 2), {encoding:'UTF-8'}, function(err) {
-        if (err) throw err;
-        console.log(confFile + ' is updated!');
-        process.exit(0);
-      });
-    } else {
-      process.exit(0);
+    if (!isSave) {
+      projects[i] = {
+        name: _projectName,
+        description: (typeof _options.description === 'string') ? _options.description : ''
+      };
     }
+    //console.log(JSON.stringify(_config, null, 2));
+
+    fs.writeFile(confFile, JSON.stringify(_config, null, 2), {encoding:'UTF-8'}, function(err) {
+      if (err) throw err;
+      console.log(confFile + ' is updated!');
+      process.exit(0);
+    });
   } else {
     process.exit(0);
   }
