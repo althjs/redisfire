@@ -48,6 +48,7 @@ describe('Routing', function() {
 
     describe('Redisfire test project have to initialized && service module test', function() {
       it('/service/foo/init_test should response "SUCCESS"', function (done) {
+        this.timeout(4000);
         request(app)
           .get('/service/foo/init_test')
           .send()
