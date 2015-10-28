@@ -24,8 +24,17 @@ function getConf(useDeferred) {
   if (useDeferred) {
     deferred = $q.defer();
     tmp = fs.readFile(confDir + '/redisfire-conf.json', {encoding: 'utf-8'}, function(err, data) {
-        conf = JSON.parse(jsonMinify(data));
-        deferred.resolve(conf);
+        try {
+          conf = JSON.parse(jsonMinify(data));
+          deferred.resolve(conf);
+        } catch(e) {
+          console.log('XXXX getConf (retry getConf ㅠㅠ) err:' + e.message);
+          setTimeout(function() {
+            deferred.resolve(getConf());
+          }, 500);
+
+        }
+
     });
     return deferred.promise;
   } else {
