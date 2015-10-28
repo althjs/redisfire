@@ -90,9 +90,10 @@ exports.promise_reject = function(req, res) {
 
 
 
-function socketGetTest() {
+function socketGetTest(key) {
   var deferred = $q.defer();
-  socket_client.emit('GET', 'redisfire-test/feed/entry/2/author/name', {foo:'bar'});
+
+  socket_client.emit('GET', (key || 'redisfire-test/feed/entry/2/author/name'), {foo:'bar'});
   socket_client.on('redisfire', function(eventType, sres, params){
     if (eventType === 'GET') {
       deferred.resolve({
@@ -100,13 +101,18 @@ function socketGetTest() {
         params: params
       });
     }
+  }, function(err) {
+      deferred.resolve({
+        res: err,
+        params: params
+      });
   });
   return deferred.promise;
 }
 
-function socketPostTest() {
+function socketPostTest(key) {
   var deferred = $q.defer();
-  socket_client.emit('POST', 'redisfire-test/feed/entry/2/author/name2', {hello: 'WORLD'}, {foo:'bar'});
+  socket_client.emit('POST', (key || 'redisfire-test/feed/entry/2/author/name2'), {hello: 'WORLD'}, {foo:'bar'});
   socket_client.on('redisfire', function(eventType, sres, params){
     if (eventType === 'POST') {
       deferred.resolve({
@@ -114,13 +120,18 @@ function socketPostTest() {
         params: params
       });
     }
+  }, function(err) {
+      deferred.resolve({
+        res: err,
+        params: params
+      });
   });
   return deferred.promise;
 }
 
-function socketPutTest() {
-  var deferred = $q.defer();
-  socket_client.emit('PUT', 'redisfire-test/feed/entry/2/author', {name: 'Jongsoon'}, {foo:'bar'});
+function socketPutTest(key) {
+  var deferred = $q.defer(key);
+  socket_client.emit('PUT', (key || 'redisfire-test/feed/entry/2/author'), {name: 'Jongsoon'}, {foo:'bar'});
   socket_client.on('redisfire', function(eventType, sres, params){
     if (eventType === 'PUT') {
       deferred.resolve({
@@ -128,13 +139,18 @@ function socketPutTest() {
         params: params
       });
     }
+  }, function(err) {
+      deferred.resolve({
+        res: err,
+        params: params
+      });
   });
   return deferred.promise;
 }
 
-function socketDeleteTest() {
+function socketDeleteTest(key) {
   var deferred = $q.defer();
-  socket_client.emit('DELETE', 'redisfire-test/feed/entry/2/author/name2', {foo:'bar'});
+  socket_client.emit('DELETE', (key || 'redisfire-test/feed/entry/2/author/name2'), {foo:'bar'});
   socket_client.on('redisfire', function(eventType, sres, params){
     if (eventType === 'DELETE') {
       deferred.resolve({
@@ -142,6 +158,11 @@ function socketDeleteTest() {
         params: params
       });
     }
+  }, function(err) {
+      deferred.resolve({
+        res: err,
+        params: params
+      });
   });
   return deferred.promise;
 }
@@ -174,6 +195,44 @@ exports.socket_test = function(req, res) {
   }
 };
 
+exports.socket_test_error = function(req, res) {
+
+  // GET Socket Error Test
+  socketGetTest('redisfire-test/feed/entry/2/author/name_error').then(function(o) {
+    if (o.res.code === 'FAIL') {
+
+      // POST Socket Error Test
+      socketPostTest('redisfire-test/').then(function(o) {
+        if (o.res.code === 'FAIL') {
+
+          // PUT Socket Error Test
+          socketPutTest('redisfire-test/feed/entry/2/author_error').then(function(o) {
+            if (o.res.code === 'FAIL') {
+
+              // DELETE Socket Error Test
+              socketDeleteTest('redisfire-test/feed/entry/2/author/name2_error').then(function(o) {
+                if (o.res.code === 'FAIL') {
+                  res.send(true);
+                } else {
+                  res.send(o);
+                }
+              });
+              // res.send(true);
+            } else {
+              res.send(o);
+            }
+          });
+          // res.send(true);
+        } else {
+          res.send(o);
+        }
+      });
+      // res.send(true);
+    } else {
+      res.send(o);
+    }
+  });
+}
 
 
 exports.port_already_occupied = function (req, res) {

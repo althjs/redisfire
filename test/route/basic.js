@@ -665,6 +665,8 @@ describe('Routing', function() {
           });
       });
 
+
+
       it('[GET] /rest/redisfire-test/ code should be "SUCCESS"', function (done) {
         request(app)
           .get('/rest/redisfire-test/')
@@ -750,6 +752,21 @@ describe('Routing', function() {
           });
       });
 
+      it('[SOCKET] error case', function (done) {
+        request(app)
+          .get('/service/foo/socket_test_error')
+          .send()
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+            res.res.text.should.equal('true');
+            done();
+          });
+      });
+
+
 
       it('if server port already used, the redifire service should show the correct error message', function (done) {
         this.timeout(4000);
@@ -801,6 +818,25 @@ describe('Routing', function() {
           done();
         });
       });
+
+
+      it('[GET] json request should be file download', function (done) {
+        request(app)
+        .get('/rest/redisfire-test/feed/link.json')
+        .send()
+        .expect(200)
+        .end(function (err, res) {
+          if (err) {
+            throw err;
+          }
+          console.log(res.res.headers)
+          res.res.headers['content-disposition'].should.equal('attachment; filename=redisfire-test_feed_link.json');
+          done();
+        });
+      });
+
+
+
     });
 
 });
