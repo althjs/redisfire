@@ -16,16 +16,28 @@ if (/travis/.test(__dirname)) { // for travis-ci test
   confDir = require('path').join(__dirname + './../conf');
 }
 
-function getConf() {
+function getConf(useDeferred) {
   var tmp,
-    conf;
-  try {
-    tmp = fs.readFileSync(confDir + '/redisfire-conf.json', {encoding: 'utf-8'});
-    conf = JSON.parse(jsonMinify(tmp));
-  } catch(e) {
-    console.log('XXXX getConf err:' + e.message);
+    conf,
+    deferred;
+
+  if (useDeferred) {
+    deferred = $q.defer();
+    tmp = fs.readFile(confDir + '/redisfire-conf.json', {encoding: 'utf-8'}, function(err, data) {
+        conf = JSON.parse(jsonMinify(data));
+        deferred.resolve(conf);
+    });
+    return deferred.promise;
+  } else {
+    try {
+      tmp = fs.readFileSync(confDir + '/redisfire-conf.json', {encoding: 'utf-8'});
+      conf = JSON.parse(jsonMinify(tmp));
+    } catch(e) {
+      console.log('XXXX getConf err:' + e.message);
+    }
+    return conf;
   }
-  return conf;
+
 }
 
 console.log('@@ confDir: ' + confDir);
@@ -44,15 +56,15 @@ client.on('error', function (err) {
 });
 
 function updateCache() {
-  var conf = getConf(),
-  projects = conf.projects,
-  i,
-  len = projects.length;
+  getConf(true).then(function(conf) {
+    var projects = conf.projects,
+    i,
+    len = projects.length;
 
-  for (i=0; i<len; i++) {
-    // console.log(projects[i].name);
-    redisHKEYS(projects[i].name);
-  }
+    for (i=0; i<len; i++) {
+      redisHKEYS(projects[i].name);
+    }
+  });
 }
 
 // watch config file
