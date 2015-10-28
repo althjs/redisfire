@@ -42,7 +42,7 @@ exports.init_test = function(req, res) {
       var exec = require('child_process').exec,
         command = 'node ' + require('path').join(__dirname +
           (require('fs').existsSync(require('path').join(__dirname + './../bin/redisfire-import')) ? './../bin/redisfire-import' : './../redisfire/bin/redisfire-import')) +
-            ' _sample_data/theverge.json redisfire-test -s -d "Redisfire Test Project"';
+            ' _sample_data/theverge.json redisfire-test';
 
 
       exec(command, function(error, stdout, stderr) {
