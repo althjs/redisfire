@@ -73,7 +73,9 @@ fs.exists(confDir, function(exists) {
 
     if (/conf.json/.test(filename)) {
       console.log('conf.json changed with ' + event + ' event. (' + filename + ')');
-      updateCache();
+      setTimeout(function() {
+        updateCache();
+      }, 10);
     }
   });
 });
