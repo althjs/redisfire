@@ -42,7 +42,7 @@ exports.init_test = function(req, res) {
       var exec = require('child_process').exec,
         command = 'node ' + require('path').join(__dirname +
           (require('fs').existsSync(require('path').join(__dirname + './../bin/redisfire-import')) ? './../bin/redisfire-import' : './../redisfire/bin/redisfire-import')) +
-            ' _sample_data/theverge.json redisfire-test';
+            ' _sample_data/theverge.json redisfire-test -s -d "Redisfire Test Project"';
 
 
       exec(command, function(error, stdout, stderr) {
@@ -171,5 +171,89 @@ exports.socket_test = function(req, res) {
         res.send(o);
       });
       break;
+  }
+};
+
+
+
+exports.port_already_occupied = function (req, res) {
+  var exec = require('child_process').exec,
+  command = 'node ' + path.join(__dirname + './../redisfire/bin/www');
+
+  if (/(travis)/.test(__dirname)) {
+    command = 'node ' + path.join(__dirname + './../bin/www');
+  }
+
+  console.log('port_already_occupied command:', command);
+  try {
+    exec(command, function(error, stdout, stderr) {
+      res.send(stderr);
+    });
+  } catch(e) {
+    res.send('port_already_occupied err:', e.message);
+  }
+
+};
+
+exports.redisfire_cli = function (req, res) {
+  var exec = require('child_process').exec,
+  command = 'node ' + path.join(__dirname + './../redisfire/bin/redisfire');
+
+  if (/(travis)/.test(__dirname)) {
+    command = 'node ' + path.join(__dirname + './../bin/redisfire');
+  }
+
+  console.log('redisfire_cli command:', command + ' start -p 3001');
+  try {
+    exec(command + ' start -p 3001', function(error, stdout, stderr) {
+      if (/Port 3001 is already in use/.test(stderr)) {
+        console.log('redisfire_cli command:', command);
+        exec(command, function(error, stdout, stderr) {
+          if (/Usage: redisfire <start|stop|status>/.test(stdout)) {
+            exec(command + ' start -p 80', function(error, stdout, stderr) {
+              if (/Port 80 requires elevated privileges/.test(stderr)) {
+                res.send(true)
+              } else {
+                res.send(false);
+              }
+            });
+
+          } else {
+            res.send(false);
+          }
+        });
+      } else {
+        res.send(false);
+      }
+    });
+  } catch(e) {
+    res.send('port_already_occupied err:', e.message);
+  }
+};
+
+exports.redisfire_import_cli = function (req, res) {
+  var exec = require('child_process').exec,
+  command = 'node ' + path.join(__dirname + './../redisfire/bin/redisfire-import');
+
+  if (/(travis)/.test(__dirname)) {
+    command = 'node ' + path.join(__dirname + './../bin/redisfire-import');
+  }
+
+  console.log('redisfire_import_cli command:', command);
+  try {
+    exec(command, function(error, stdout, stderr) {
+        console.log(stdout);
+      if (/Usage: redisfire-import <fileName> <projectName/.test(stdout)) {
+
+        exec(command + ' --help', function(error, stdout, stderr) {
+                  console.log(stdout);
+          res.send(/Usage: redisfire-import <fileName> <projectName/.test(stdout));
+        });
+      } else {
+        res.send(false);
+      }
+    });
+  } catch(e) {
+    res.send('port_already_occupied err:', e.message);
   }
 };

@@ -21,12 +21,6 @@ program
       _opts.port = options.port;
     }
 
-    if (!process.argv.slice(2).length) {
-      program.outputHelp();
-      return;
-    }
-
-
   });
 
 
@@ -49,9 +43,6 @@ if (!/(start|stop|status)/.test(_action)) {
     return;
 }
 
-if (program.integer) {
-    console.log('포트!:', program.integer);
-}
 switch(_action) {
   case 'start':
       var app = require('../app');
@@ -71,13 +62,11 @@ switch(_action) {
       server.on('error', function(error) {
         switch (error.code) {
           case 'EACCES':
-            console.error(port + ' requires elevated privileges');
+            console.error('Port ' + port + ' requires elevated privileges');
             process.exit(1);
-            break;
           case 'EADDRINUSE':
-            console.error(port + ' is already in use');
+            console.error('Port ' + port + ' is already in use');
             process.exit(1);
-            break;
           default:
             throw error;
         }

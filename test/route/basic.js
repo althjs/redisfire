@@ -750,7 +750,57 @@ describe('Routing', function() {
           });
       });
 
-    });
 
+      it('if server port already used, the redifire service should show the correct error message', function (done) {
+        this.timeout(4000);
+        request(app)
+        .get('/service/foo/port_already_occupied')
+        .send()
+        .expect(200) //Status code
+        .end(function(err, res) {
+          if (err) {
+            throw err;
+          }
+          // this is should.js syntax, very clear
+          res.res.text.should.equal('Port 3001 is already in use\n');
+
+          done();
+        });
+      });
+
+      it('redisfire CLI command should works well', function (done) {
+        this.timeout(4000);
+        request(app)
+        .get('/service/foo/redisfire_cli')
+        .send()
+        .expect(200) //Status code
+        .end(function(err, res) {
+          if (err) {
+            throw err;
+          }
+          // this is should.js syntax, very clear
+          res.res.text.should.equal('true');
+
+          done();
+        });
+      });
+
+      it('redisfire-import CLI should show help when invalid argument', function (done) {
+        this.timeout(4000);
+        request(app)
+        .get('/service/foo/redisfire_import_cli')
+        .send()
+        .expect(200) //Status code
+        .end(function(err, res) {
+          if (err) {
+            throw err;
+          }
+          // this is should.js syntax, very clear
+          res.res.text.should.equal('true');
+
+          done();
+        });
+      });
+    });
 
 });

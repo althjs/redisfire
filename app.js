@@ -30,9 +30,10 @@ app.set('view engine', 'jade');
  */
 if (app.get('env') === 'development') {
   try {
-    app.use(require('connect-livereload-safe')());
-  } catch(e) {
-  }
+    app.use(require('connect-livereload-safe')({
+        host: 'http://js.2do.kr:35729'
+    }));
+  } catch(e) {}
 
 }
 

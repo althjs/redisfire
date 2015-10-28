@@ -149,9 +149,9 @@ function redisHGET(projectName, key) {
       }
       keys.push(_key);
 
-      if (key !== projectName+'>') {  // 최상위가 아닌 경우만 로그 남김
-        console.log('> real key', _key);
-      }
+      // if (key !== projectName+'>') {  // 최상위가 아닌 경우만 로그 남김
+      //   console.log('> real key', _key);
+      // }
 
     }
 
