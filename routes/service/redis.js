@@ -84,7 +84,7 @@ function ioDELETE (path, params) {
   restDELETE(projectName, path).then(function(datas) {
     deferred.resolve(datas);
   }, function (err) {
-    deferred.resolve(err);
+    deferred.reject(err);
   });
 
   return deferred.promise;
