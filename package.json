@@ -1,6 +1,6 @@
 {
   "name": "redisfire",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "author": "Jongsoon Park <althjs@gmail.com>",
   "scripts": {
     "postinstall": "node utils/postinstall",
