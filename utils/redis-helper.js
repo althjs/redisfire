@@ -17,9 +17,14 @@ if (/travis/.test(__dirname)) { // for travis-ci test
 }
 
 function getConf() {
-  var tmp = fs.readFileSync(confDir + '/redisfire-conf.json', {encoding: 'utf-8'}),
-  conf = JSON.parse(jsonMinify(tmp));
-
+  var tmp,
+    conf;
+  try {
+    tmp = fs.readFileSync(confDir + '/redisfire-conf.json', {encoding: 'utf-8'});
+    conf = JSON.parse(jsonMinify(tmp));
+  } catch(e) {
+    console.log('XXXX getConf err:' + e.message);
+  }
   return conf;
 }
 
