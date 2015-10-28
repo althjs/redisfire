@@ -9,6 +9,7 @@ var _redis = require("../../utils/redis-helper"),
 var io;
 var cache = _redis.cache;
 
+_redis.doWatchConf();
 
 var pathToRedisKey = function(path) {
   //console.log('pathToRedisKey path:' + path);

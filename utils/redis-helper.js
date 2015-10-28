@@ -68,18 +68,19 @@ function updateCache() {
 }
 
 // watch config file
-fs.exists(confDir, function(exists) {
-  fs.watch(confDir, function (event, filename) {
+function doWatchConf () {
+  console.log('@@ redisfire-conf.json watch start!!');
+  fs.exists(confDir, function(exists) {
+    fs.watch(confDir, function (event, filename) {
 
-    if (/conf.json/.test(filename)) {
-      console.log('conf.json changed with ' + event + ' event. (' + filename + ')');
-      setTimeout(function() {
+      if (/conf.json/.test(filename)) {
+        console.log('conf.json changed with ' + event + ' event. (' + filename + ')');
         updateCache();
-      }, 10);
-    }
+      }
+    });
   });
-});
-
+}
+exports.doWatchConf = doWatchConf;
 
 /**
 * doMonitor redis 모니터 실행
