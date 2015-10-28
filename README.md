@@ -1,7 +1,9 @@
 Redisfire - realtime memory DB Service.
 ===========================
 [![Build Status](https://travis-ci.org/althjs/redisfire.png)](https://travis-ci.org/althjs/redisfire)
-[![Coverage Status](https://coveralls.io/repos/althjs/redisfire/badge.svg?branch=)](https://coveralls.io/r/althjs/redisfire?branch=)
+[![Coverage Status](https://coveralls.io/repos/althjs/redisfire/badge.svg?branch=master&service=github)](https://coveralls.io/github/althjs/redisfire?branch=master)
+[![Dependencies Status](https://david-dm.org/althjs/redisfire.svg)](https://david-dm.org/althjs/redisfire)
+
 
 Let's make Firebase features using Express, Socket.io, Redis and other powerful opensources.
 
