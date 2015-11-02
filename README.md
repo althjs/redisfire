@@ -188,6 +188,10 @@ socket.emit('PUT', 'theverge/feed/entry/2/author', {name: 'Jongsoon'}, {foo:'bar
   * add "redis-client" option to redisfire-conf.json
 * 0.0.21
   * update npm dependencies
+* 0.0.22
+  * add deep depth create for POST
+  * sorted JSON return by key name for GET
+  * update npm dependencies
 
 ## License
 * The MIT License (MIT)

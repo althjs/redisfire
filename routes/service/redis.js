@@ -205,7 +205,21 @@ function restGET(projectName, path) {
                     }
                 }
 
-                deferred.resolve(datas);
+                if (!_.isArray(datas) && typeof datas !== 'string') {
+                    var keys = Object.keys(datas),
+                      i,
+                      len = keys.length,
+                      sortedDatas = {};
+
+                    keys.sort();
+                    for (i=0; i<len; i++) {
+                      sortedDatas[keys[i]] = datas[keys[i]];
+                    }
+
+                    deferred.resolve(sortedDatas);
+                } else {
+                  deferred.resolve(datas);
+                }
             });
         } catch(e) {
             deferred.reject('restGET 데이터처리 err: ' + e.message);
