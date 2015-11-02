@@ -419,6 +419,36 @@ describe('Routing', function() {
           });
       });
 
+      it('[POST] created data should be created when deep depth request (2dpeth)', function (done) {
+        request(app)
+          .post('/rest/redisfire-test/feed/depth1/depth2')
+          .send({foo:"bar2"})
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+            var data = JSON.parse(res.res.text);
+            (JSON.stringify(data.data)).should.equal('{"redisfire-test>feed>depth1>depth2>foo":"bar2"}')
+            done();
+          });
+      });
+
+      it('[POST] created data should be created when deep depth request (3depth)', function (done) {
+        request(app)
+          .post('/rest/redisfire-test/feed/d1/d2/d3')
+          .send({foo:"bar2"})
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+            var data = JSON.parse(res.res.text);
+            (JSON.stringify(data.data)).should.equal('{"redisfire-test>feed>d1>d2>d3>foo":"bar2"}')
+            done();
+          });
+      });
+
       it('[DELETE] some index of data sould be delete', function (done) {
         request(app)
           .delete('/rest/redisfire-test/feed/entry/10')

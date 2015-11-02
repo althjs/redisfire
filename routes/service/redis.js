@@ -319,7 +319,40 @@ function restPOST(projectName, key, req) {
 
                         });
                     } else {
-                        deferred.reject('해당키에 대한 요소를 찾지 못함 key:' + key + ' ,' + _key);
+                        var newBodyKey = key.replace(targetKey, ''),
+                          newBody = {};
+
+                        if (newBodyKey.split('>').length === 3) {
+                          newBodyKey = newBodyKey.split('>')[1];
+                          newBody[newBodyKey] = body;
+                          //deferred.reject('해당키에 대한 요소를 찾지 못했지만 강제로 추가할수 있음 :' + newBodyKey + ' ::::: ' + key + ' ,' + _key + JSON.stringify(newBody, null,2));
+
+                          _helper.objectToHashKeyPair(newBody, targetKey).then(function(newHash) {
+                              try {
+                                  var tmp,
+                                      k2;
+                                  console.log('create newHash', newHash);
+
+                                  // deferred.resolve(newHash);
+                                  _redis.redisHMSET(projectName, key, newHash).then(function(o) {
+                                      console.log('WOW POST CREATE SUCCESS!!!!:', JSON.stringify(o,null,2));
+
+                                      for (k2 in newHash) {
+                                        cache[projectName].push(k2);
+                                      }
+                                      deferred.resolve(newHash);
+                                  }, function(err) {
+                                      deferred.reject(err);
+                                  });
+                              } catch(e) {
+                                  console.log('restPOST ERR 2:' + e.message);
+                                  deferred.reject('restPOST ERR 2:' + e.message);
+                              }
+
+                          });
+                        } else {
+                          deferred.reject('해당키에 대한 요소를 찾지 못함 key :' + newBodyKey + ' ::::: ' + key + ' ,' + _key + JSON.stringify(body, null,2));
+                        }
                     }
 
 
