@@ -135,7 +135,7 @@ function parseJSON (obj, key) {
 setTimeout(function() {
   parseJSON(datas, _projectName);
 
-},10)
+},10);
 
 setTimeout(function() {
 
@@ -156,7 +156,7 @@ setTimeout(function() {
           projects[i] = {
             name: k,
             description: _options.description
-          }
+          };
           break;
         }
       }
@@ -171,7 +171,7 @@ setTimeout(function() {
     //console.log(JSON.stringify(_config, null, 2));
 
     fs.writeFile(confFile, JSON.stringify(_config, null, 2), {encoding:'UTF-8'}, function(err) {
-      if (err) throw err;
+      if (err) { throw err; }
       console.log(confFile + ' is updated!');
       process.exit(0);
     });

@@ -155,11 +155,11 @@ exports.getIO = function() {
   var deferred = $q.defer();
 
   require('../../utils/socket.io-helper').get_socket_io().then(function(_io) {
-    deferred.resolve(_io)
+    deferred.resolve(_io);
   });
 
   return deferred.promise;
-}
+};
 
 
 /**
@@ -168,7 +168,7 @@ exports.getIO = function() {
  */
 exports['rest/:param1/:param2'] = function (req, res) {
     res.send('WOW');
-}
+};
 
 
 
@@ -178,7 +178,8 @@ exports['rest/:param1/:param2'] = function (req, res) {
 function restGET(projectName, path) {
     var deferred = $q.defer();
     var targetKey = path.split('>');
-
+    var i,
+      len;
     _redis.redisHGET(projectName, path).then(function (hash) {
         try {
             var datas = _helper.hashToJSON(hash);
@@ -190,8 +191,7 @@ function restGET(projectName, path) {
                 // console.log('objectToJSON 결과:', JSON.stringify(datas, null,2));
                 datas = datas[projectName];
                 // console.log('XXX', datas, targetKey);
-                var i,
-                    len = targetKey.length;
+                len = targetKey.length;
 
                 for (i=0; i<len; i++) {
                     //console.log('@@@@@@ targetKey[' + i + ']:' + targetKey[i], (datas.length || ''), JSON.stringify(datas));
@@ -207,9 +207,8 @@ function restGET(projectName, path) {
 
                 if (!_.isArray(datas) && typeof datas !== 'string') {
                     var keys = Object.keys(datas),
-                      i,
-                      len = keys.length,
                       sortedDatas = {};
+                    len = keys.length;
 
                     keys.sort();
                     for (i=0; i<len; i++) {
@@ -262,7 +261,7 @@ function restPOST(projectName, key, req) {
 
             try {
                 restPUT(projectName, key, req).then(function(response) {
-                    deferred.resolve(response)
+                    deferred.resolve(response);
                 }, function(err) {
                     deferred.reject(err);
                 });
@@ -300,14 +299,15 @@ function restPOST(projectName, key, req) {
 
                 targetKey = targetKey.replace(/>$/,'');
 
-                var max = 0;
+                var max = 0,
+                  newTarget;
                 // console.log("XXXXX: " + targetKey);
 
                 if (!t) {   // 해당키에 대한 요소를 찾지 못함.
 
                     if (key.split('>').length === 3) {  // 최상위 요소임
                         console.log('해당키에 대한 요소를 찾지 못함', body, newTarget, key, targetKey);
-                        var newTarget = _key.split('>')[0] + '>' + key.split('>')[1];
+                        newTarget = _key.split('>')[0] + '>' + key.split('>')[1];
 
                         _helper.objectToHashKeyPair(body, newTarget).then(function(newHash) {
                             try {
@@ -399,7 +399,7 @@ function restPOST(projectName, key, req) {
                     pos = pos[pos.length-1];
                     pos = realKeyPrefix.indexOf(pos) + pos.length;
                     realKeyPrefix = realKeyPrefix.substring(0, pos);
-                    var newTarget = realKeyPrefix + '@>' + (max+1);
+                    newTarget = realKeyPrefix + '@>' + (max+1);
 
                     //console.log('요기???' , newTarget, body, targetKey, t, realKeyPrefix);
                     _helper.objectToHashKeyPair(body, newTarget).then(function(newHash) {
@@ -431,7 +431,7 @@ function restPOST(projectName, key, req) {
                     //     tmp = t.split('>'),
                     //     newTarget = tmp.splice(0, l.length-2).join('>') + '>' + l[2];
 
-                    var newTarget = _helper.getRealKeyPrefix(t, path);
+                    newTarget = _helper.getRealKeyPrefix(t, path);
 
                     _helper.objectToHashKeyPair(body, newTarget).then(function(newHash) {
                         try {
@@ -450,7 +450,7 @@ function restPOST(projectName, key, req) {
 
                                 setTimeout(function() {
                                   deferred.resolve(newHash);
-                                })
+                                });
                             }, function(err) {
                                 deferred.reject(err);
                             });
@@ -478,11 +478,11 @@ function restPOST(projectName, key, req) {
  * UPDATE
  */
 function restPUT(projectName, key, req) {
+  var deferred = $q.defer(),
+      body = req.body,
+      isBodyArray = _.isArray(body);
 
     try {
-        var deferred = $q.defer(),
-            body = req.body,
-            isBodyArray = _.isArray(body);
 
         if (req.headers['content-type'].toLowerCase() !== 'application/json') {
             deferred.reject('content-type is not application/json');
@@ -514,7 +514,7 @@ function restPUT(projectName, key, req) {
                             oOld[k.replace(/@/g,'')] = {
                                 key: k,
                                 val: hash[k]
-                            }
+                            };
 
                             if (!subRoot) {
                                 subRoot = _helper.getRealKeyPrefix(k, key, isBodyArray);
@@ -613,11 +613,13 @@ function restPUT(projectName, key, req) {
                                     }
                                 }
 
+                                var i,
+                                  len,
+                                  j,
+                                  lenj;
                                 if (oFinalDel.length>0) {
-                                    var i,
-                                        len = oFinalDel.length,
-                                        j,
-                                        lenj = oOldCouldBeDelete.length;
+                                    len = oFinalDel.length;
+                                    lenj = oOldCouldBeDelete.length;
                                     for (i=0; i<len; i++) {
                                         for (j=0; j<lenj; j++) {
                                             if (_helper.getKeyRegexp(oFinalDel[i]).test(oOldCouldBeDelete[j] +'>')) {
@@ -630,8 +632,7 @@ function restPUT(projectName, key, req) {
                                         }
                                     }
                                 } else {
-                                    var j,
-                                        lenj = oOldCouldBeDelete.length;
+                                    lenj = oOldCouldBeDelete.length;
 
                                     for (j=0; j<lenj; j++) {
                                         // @iolothebard 님의 가르침에 따라 모두 삭제하장 ㅋㅋㅋ

@@ -231,7 +231,7 @@ exports.service = function (req, res, next) {
         }
 
     } else if (restfulPathInfo) {
-        pathName = restfulPathInfo.originalPath
+        pathName = restfulPathInfo.originalPath;
 
         req.query._pathParam = restfulPathInfo.pathParam;
 
@@ -256,4 +256,4 @@ exports.service = function (req, res, next) {
         res.status(404);
         res.send('service not found');
     }
-}
+};

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-'usr strict';
+'use strict';
 var fs = require('fs'),
   path = require('path');
 

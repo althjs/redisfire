@@ -171,7 +171,7 @@ function objectToHashKeyPair (targetObj, pathPrefix) {
     		parseJSON(val, key + '>' + k);
 
     	}
-    }
+    };
 
     var parseJSON = function (obj, key) {
     	var k,
@@ -193,7 +193,7 @@ function objectToHashKeyPair (targetObj, pathPrefix) {
     			parseSub(val, key, k);
     		}
     	}
-    }
+    };
 
     setTimeout(function() {
         deferred.resolve(hash);
@@ -222,10 +222,12 @@ function getRealKeyPrefix (relatedPath, requestPath) {
     }
 
     var l = requestPath.split('>'),
-        relatedPath = relatedPath.split('>'),
-        newPath = relatedPath.splice(0, l.length-2).join('>') + '>' + l[l.length-2];
+      newPath;
 
-        // console.log(l, newPath);
+    relatedPath = relatedPath.split('>');
+    newPath = relatedPath.splice(0, l.length-2).join('>') + '>' + l[l.length-2];
+
+    // console.log(l, newPath);
 
     return newPath;
 }

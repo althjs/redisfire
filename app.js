@@ -1,3 +1,5 @@
+'use strict';
+
 var express = require('express');
 var path = require('path');
 // var favicon = require('serve-favicon');
@@ -8,8 +10,6 @@ var bodyParser = require('body-parser');
 var intercepter = require('./routes/interceptor');
 var swig = require('swig');
 var redisfire = require('./routes/service/redis');
-
-var io = require
 
 
 swig.setDefaults({

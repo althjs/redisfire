@@ -27,7 +27,7 @@ exports.io = function(_io) {
     io.on('connection', function (socket) {
         socket.emit('news', { hello: 'world' });
     });
-}
+};
 
 exports.get_socket_io = function(t) {
     // console.log('get_socket_io called', t);
@@ -45,4 +45,4 @@ exports.get_socket_io = function(t) {
     };
     resolveIO();
     return deferred.promise;
-}
+};

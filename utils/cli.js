@@ -63,10 +63,10 @@ switch(_action) {
         switch (error.code) {
           case 'EACCES':
             console.error('Port ' + port + ' requires elevated privileges');
-            process.exit(1);
+            process.exit(1); break;
           case 'EADDRINUSE':
             console.error('Port ' + port + ' is already in use');
-            process.exit(1);
+            process.exit(1); break;
           default:
             throw error;
         }

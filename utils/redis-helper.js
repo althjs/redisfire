@@ -139,7 +139,7 @@ function redisHKEYS(projectName) {
   // 좀 많이 무식함 ㅠㅠ. 해당 해시맵 전체 데이터를 가져와 JSON 형태로 변환 (path 는 조건에 해당함)
   client.hkeys(projectName, function (error, keyList) {
     cache[projectName] = keyList;
-    console.log('@@ ' + projectName + ' cache update. (count: ' + keyList.length + ')')
+    console.log('@@ ' + projectName + ' cache update. (count: ' + keyList.length + ')');
     deferred.resolve(keyList);
   });
   return deferred.promise;
@@ -357,4 +357,4 @@ exports.getHashAllData = function(projectName) {
   });
 
   return deferred.promise;
-}
+};
