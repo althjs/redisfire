@@ -30,13 +30,11 @@ app.set('view engine', 'jade');
  */
 if (app.get('env') === 'development') {
   try {
-    app.use(require('connect-livereload-safe')());
+    app.use(require('connect-livereload-safe')(process.env.LIVERELOAD_HOST ? {host: process.env.LIVERELOAD_HOST} : {}));
   } catch(e) {}
-
 }
 
 var staticDir = path.join(__dirname + (/node_modules/.test(__dirname) ? './../../static' : './../static'));
-
 /**
  * check the test env
  */

@@ -9,8 +9,46 @@ fs = require("fs"),
 jsonMinify = require("node-json-minify");
 
 
+var crypto = require('crypto'),
+  crypto_key;
+
+
+function encrypt(text) {
+  var cipher = crypto.createCipher('aes-256-cbc', crypto_key);
+  return cipher.update(text,'utf8','hex') + cipher.final('hex');
+}
+
+function decrypt(text){
+  var decipher = crypto.createDecipher('aes-256-cbc', crypto_key);
+  return decipher.update(text,'hex','utf8') + decipher.final('utf-8');
+}
+
+exports.encrypt = encrypt;
+exports.decrypt = decrypt;
+
+/**
+* cache 프로젝트 키를 캐시하기 위한 용도
+* @type {Object}
+* @examples
+* console.log(JSON.stringnify(cache, null, 2));
+* {
+*   test-sites: [
+*   	'text-sites@>0...',
+*   	'...'
+*   ],
+*   test-libs: [
+*   	'test-libs>광진구>library...',
+*   	'...'
+*   ]
+* }
+*/
+var cache = {};
+exports.cache = cache;
+
+
 var confDir = require('path').join(__dirname + (/node_modules/.test(__dirname) ? './../../../conf' : './../../conf')),
-  redisClientConf;
+  redisClientConf,
+  conf;
 
 if (/travis/.test(__dirname)) { // for travis-ci test
   confDir = require('path').join(__dirname + './../conf');
@@ -27,6 +65,8 @@ function getConf(useDeferred) {
         try {
           conf = JSON.parse(jsonMinify(data));
           deferred.resolve(conf);
+          conf = conf;
+          crypto_key = conf['CRYPTO_KEY'];
         } catch(e) {
           console.log('XXXX getConf (retry getConf ㅠㅠ) err:' + e.message);
           setTimeout(function() {
@@ -50,12 +90,38 @@ function getConf(useDeferred) {
 }
 
 console.log('@@ confDir: ' + confDir);
-redisClientConf = getConf()['redis-client'] || null;
 
+conf = getConf() || {};
+crypto_key = conf['CRYPTO_KEY'];
+redisClientConf = conf['redis-client'] || null;
+
+
+
+exports.getConf = function() {
+  return conf;
+};
+
+function getProjectConf(projectName) {
+  var i,
+    len = conf.projects.length,
+    project;
+
+  for (i=0; i<len; i++) {
+    project = conf.projects[i];
+
+    if (project.name === projectName) {
+        return project;
+    }
+  }
+  return null;
+}
+exports.getProjectConf = getProjectConf;
 
 client = redis.createClient(redisClientConf);
 client.on('connect', function () {
-  updateCache();
+  updateCache().then(function() {
+
+  });
 });
 
 client.on('error', function (err) {
@@ -65,15 +131,40 @@ client.on('error', function (err) {
 });
 
 function updateCache() {
+  var deferred = $q.defer();
   getConf(true).then(function(conf) {
     var projects = conf.projects,
     i,
+    j = 0,
     len = projects.length;
 
+    var deferreds = [],
+      promises = [];
     for (i=0; i<len; i++) {
-      redisHKEYS(projects[i].name);
+
+      if (projects[i].auth) {
+        deferreds[j] = $q.defer();
+        promises[j] = deferreds[j].promise;
+        redisHKEYS(projects[i].auth, j).then(function(o) {
+          deferreds[o.params].resolve();
+        });
+        j++;
+      }
+
+      deferreds[j] = $q.defer();
+      promises[j] = deferreds[j].promise;
+      redisHKEYS(projects[i].name, j).then(function(o) {
+        deferreds[o.params].resolve();
+      });
+      j++;
     }
+
+    $q.all(promises).then(function() {
+      deferred.resolve();
+    });
   });
+
+  return deferred.promise;
 }
 
 // watch config file
@@ -84,10 +175,13 @@ function doWatchConf () {
 
       if (/conf.json/.test(filename)) {
         console.log('conf.json changed with ' + event + ' event. (' + filename + ')');
-        updateCache();
+        updateCache().then(function() {
+
+        });
       }
     });
   });
+
 }
 exports.doWatchConf = doWatchConf;
 
@@ -109,38 +203,18 @@ exports.doMonitor = doMonitor;
 
 
 /**
-* cache 프로젝트 키를 캐시하기 위한 용도
-* @type {Object}
-* @examples
-* console.log(JSON.stringnify(cache, null, 2));
-* {
-*   test-sites: [
-*   	'text-sites@>0...',
-*   	'...'
-*   ],
-*   test-libs: [
-*   	'test-libs>광진구>library...',
-*   	'...'
-*   ]
-* }
-*/
-var cache = {};
-
-exports.cache = cache;
-
-/**
 * redisHKEYS 입력된 해시키를 가져와서 cache 공용 객체로 캐시함
 * @param  {string}  projectName redis 해시 키
 * @return {promise}             Array keyList가 전달 됨
 */
-function redisHKEYS(projectName) {
+function redisHKEYS(projectName, params) {
   var deferred = $q.defer();
 
   // 좀 많이 무식함 ㅠㅠ. 해당 해시맵 전체 데이터를 가져와 JSON 형태로 변환 (path 는 조건에 해당함)
   client.hkeys(projectName, function (error, keyList) {
     cache[projectName] = keyList;
     console.log('@@ ' + projectName + ' cache update. (count: ' + keyList.length + ')');
-    deferred.resolve(keyList);
+    deferred.resolve({keys: keyList, params: params});
   });
   return deferred.promise;
 }

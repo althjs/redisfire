@@ -4,6 +4,7 @@ var _redis = require("../../utils/redis-helper"),
     _ = require("lodash"),
     $q = require("q"),
     _helper = require("../../utils/helper"),
+    _auth = require("../../utils/auth"),
     md5 = require('md5');
 
 var io;
@@ -22,7 +23,9 @@ var getProjectName = function(path) {
   return path.split('/')[0].replace('@', '');
 };
 
-function ioGET (path, params) {
+
+// internal function (no auth check);
+function __ioGET (path, params) {
   var deferred = $q.defer();
   var projectName = getProjectName(path);
   path = pathToRedisKey(path);
@@ -36,32 +39,56 @@ function ioGET (path, params) {
   return deferred.promise;
 }
 
-function ioPUT (path, body, params) {
+function ioGET (path, params) {
   var deferred = $q.defer();
   var projectName = getProjectName(path);
-  var req = {
-    body: body,
-    headers: {'content-type': 'application/json'}
-  };
   path = pathToRedisKey(path);
 
-  restPUT(projectName, path, req).then(function(datas) {
-    deferred.resolve(datas);
-  }, function (err) {
+  _auth.checkAuth(projectName, {cookies: params}, __ioGET).then(function() {
+    restGET(projectName, path).then(function(datas) {
+      deferred.resolve(datas);
+    }, function (err) {
+      deferred.reject(err);
+    });
+  }, function(err) {
     deferred.reject(err);
   });
 
   return deferred.promise;
 }
 
-function ioPOST (path, body, params) {
+function ioPUT (path, body, params) {
   var deferred = $q.defer();
   var projectName = getProjectName(path);
+
+  _auth.checkAuth(projectName, {cookies: params}, __ioGET).then(function() {
+    var req = {
+      body: body,
+      headers: {'content-type': 'application/json'}
+    };
+    path = pathToRedisKey(path);
+
+    restPUT(projectName, path, req).then(function(datas) {
+      deferred.resolve(datas);
+    }, function (err) {
+      deferred.reject(err);
+    });
+  }, function(err) {
+    deferred.reject(err);
+  });
+
+  return deferred.promise;
+}
+
+// internal function (no auth check);
+function __ioPOST (path, body, params) {
+  var deferred = $q.defer();
+  var projectName = getProjectName(path);
+
   var req = {
     body: body,
     headers: {'content-type': 'application/json'}
   };
-
 
   path = pathToRedisKey(path);
 
@@ -76,17 +103,50 @@ function ioPOST (path, body, params) {
   return deferred.promise;
 }
 
+
+function ioPOST (path, body, params) {
+  var deferred = $q.defer();
+  var projectName = getProjectName(path);
+
+  _auth.checkAuth(projectName, {cookies: params}, __ioGET).then(function() {
+    var req = {
+      body: body,
+      headers: {'content-type': 'application/json'}
+    };
+
+    path = pathToRedisKey(path);
+
+    console.log('@@ SOCKET METHOD: POST', 'REDIS PATH:', path, 'REDIS PROJECT:', projectName);
+
+    restPOST(projectName, path, req).then(function(datas) {
+      deferred.resolve(datas);
+    }, function (err) {
+      deferred.reject(err);
+    });
+
+  }, function(err) {
+    deferred.reject(err);
+  });
+
+  return deferred.promise;
+}
+
 function ioDELETE (path, params) {
   var deferred = $q.defer();
   var projectName = getProjectName(path);
   path = pathToRedisKey(path);
 
-  restDELETE(projectName, path).then(function(datas) {
-    deferred.resolve(datas);
-  }, function (err) {
+  _auth.checkAuth(projectName, {cookies: params}, __ioGET).then(function() {
+    restDELETE(projectName, path).then(function(datas) {
+      deferred.resolve(datas);
+    }, function (err) {
+      deferred.reject(err);
+    });
+
+    return deferred.promise;
+  }, function(err) {
     deferred.reject(err);
   });
-
   return deferred.promise;
 }
 
@@ -306,8 +366,13 @@ function restPOST(projectName, key, req) {
                 if (!t) {   // 해당키에 대한 요소를 찾지 못함.
 
                     if (key.split('>').length === 3) {  // 최상위 요소임
-                        console.log('해당키에 대한 요소를 찾지 못함', body, newTarget, key, targetKey);
-                        newTarget = _key.split('>')[0] + '>' + key.split('>')[1];
+                        console.log('해당키에 대한 요소를 찾지 못함 (완전 새로운 프로젝트)', body, newTarget, key, targetKey);
+                        if (_key) {
+                          newTarget = _key.split('>')[0] + '>' + key.split('>')[1];
+                        } else {
+                          newTarget = key;
+                        }
+
 
                         _helper.objectToHashKeyPair(body, newTarget).then(function(newHash) {
                             try {
@@ -835,57 +900,66 @@ exports.rest = function (req, res) {
         path = path.replace(/^\/rest\//, '').replace(/\//g, '>');
     }
 
-    console.log('path:' + path);
-
+    // console.log('path:' + path);
     path = getPathWithPostfix(path);
     projectName = path.substring(0, path.indexOf('>')).replace('@', '');
 
     console.log('@@ METHOD:', req.method, 'REDIS PATH:', path, 'REDIS PROJECT:', projectName);
-
     if (!projectName) {
         res.send(errorCallback('please check usage. (http://npmjs.com/package/redisfire)'));
         return;
     }
 
-    // RESTAPI 참조: http://www.restapitutorial.com/lessons/httpmethods.html
-    switch(req.method) {
-        case 'GET': // READ
-            restGET(projectName, path).then(
-                function (data) {
-                    if (downloadFile) {
-                        res.setHeader('Content-disposition', 'attachment; filename=' + downloadFile);
-                        res.setHeader('Content-type', 'text/plain');
-                        res.send(JSON.stringify(data, null,2));
-                    } else {
-                        res.send(successCallback(data));
-                    }
-                 },
-                function (err) {
-                  res.status(404);
-                  res.send(errorCallback(err));
-                }
-            );
-            break;
-        case 'POST': // CREATE
-            restPOST(projectName, path, req).then(
-                function (data) { res.send(successCallback(data)); },
-                function (err) { res.send(errorCallback(err)); }
-            );
-            break;
-        case 'PUT': // UPDATE
-            restPUT(projectName, path, req).then(
-                function (data) { res.send(successCallback(data)); },
-                function (err) { res.send(errorCallback(err)); }
-            );
+    _auth.checkAuth(projectName, req, __ioGET).then(function() {
+      // RESTAPI 참조: http://www.restapitutorial.com/lessons/httpmethods.html
+      switch(req.method) {
+          case 'GET': // READ
+              restGET(projectName, path).then(
+                  function (data) {
+                      if (downloadFile) {
+                          res.setHeader('Content-disposition', 'attachment; filename=' + downloadFile);
+                          res.setHeader('Content-type', 'text/plain');
+                          res.send(JSON.stringify(data, null,2));
+                      } else {
+                          res.send(successCallback(data));
+                      }
+                   },
+                  function (err) {
+                    res.status(404);
+                    res.send(errorCallback(err));
+                  }
+              );
+              break;
+          case 'POST': // CREATE
+              restPOST(projectName, path, req).then(
+                  function (data) { res.send(successCallback(data)); },
+                  function (err) { res.send(errorCallback(err)); }
+              );
+              break;
+          case 'PUT': // UPDATE
+              restPUT(projectName, path, req).then(
+                  function (data) { res.send(successCallback(data)); },
+                  function (err) { res.send(errorCallback(err)); }
+              );
 
-            break;
-        case 'DELETE': // DELETE
-            restDELETE(projectName, path).then(
-                function (data) { res.send(successCallback(data)); },
-                function (err) { res.send(errorCallback(err)); }
-            );
-            break;
-    }
+              break;
+          case 'DELETE': // DELETE
+              restDELETE(projectName, path).then(
+                  function (data) { res.send(successCallback(data)); },
+                  function (err) { res.send(errorCallback(err)); }
+              );
+              break;
+      }
+    }, function(err) {
+      if (err === 'unknown project') {
+        res.status(404);        
+      } else {
+        res.status(403);
+      }
+      res.send(errorCallback(err));
+    });
+
+
 };
 
 
@@ -909,3 +983,27 @@ function errorCallback (err) {
         message: err
     };
 }
+
+
+
+exports.getUser = function(projectName, req) {
+  var deferred = $q.defer();
+  _auth.getUser(projectName, req, __ioGET).then(function(user) {
+    deferred.resolve(user);
+  }, function(err) {
+    deferred.reject(err);
+  });
+
+  return deferred.promise;
+};
+
+exports.setUser = function(projectName, user, req) {
+  var deferred = $q.defer();
+  _auth.setUser(projectName, user, req, __ioPOST).then(function(user) {
+    deferred.resolve(user);
+  }, function(err) {
+    deferred.reject(err);
+  });
+
+  return deferred.promise;
+};

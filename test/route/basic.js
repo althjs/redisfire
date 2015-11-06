@@ -1,3 +1,4 @@
+/*jslint node: true, mocha: true, strict: true */
 'use strinct';
 
 var should = require('should');
@@ -383,7 +384,7 @@ describe('Routing', function() {
             }
             var data = JSON.parse(res.res.text);
             (data.data.length).should.equal(11);
-            (JSON.stringify(data.data[10])).should.equal('{"foo":"bar"}')
+            (JSON.stringify(data.data[10])).should.equal('{"foo":"bar"}');
             done();
           });
       });
@@ -414,7 +415,7 @@ describe('Routing', function() {
             }
             var data = JSON.parse(res.res.text);
             (data.data.length).should.equal(12);
-            (JSON.stringify(data.data[11])).should.equal('{"foo":"bar2"}')
+            (JSON.stringify(data.data[11])).should.equal('{"foo":"bar2"}');
             done();
           });
       });
@@ -429,7 +430,7 @@ describe('Routing', function() {
               throw err;
             }
             var data = JSON.parse(res.res.text);
-            (JSON.stringify(data.data)).should.equal('{"redisfire-test>feed>depth1>depth2>foo":"bar2"}')
+            (JSON.stringify(data.data)).should.equal('{"redisfire-test>feed>depth1>depth2>foo":"bar2"}');
             done();
           });
       });
@@ -444,7 +445,7 @@ describe('Routing', function() {
               throw err;
             }
             var data = JSON.parse(res.res.text);
-            (JSON.stringify(data.data)).should.equal('{"redisfire-test>feed>d1>d2>d3>foo":"bar2"}')
+            (JSON.stringify(data.data)).should.equal('{"redisfire-test>feed>d1>d2>d3>foo":"bar2"}');
             done();
           });
       });
@@ -475,7 +476,7 @@ describe('Routing', function() {
             }
             var data = JSON.parse(res.res.text);
             (data.data.length).should.equal(12);
-            (JSON.stringify(data.data[10])).should.equal('null')
+            (JSON.stringify(data.data[10])).should.equal('null');
             done();
           });
       });
@@ -584,7 +585,7 @@ describe('Routing', function() {
               throw err;
             }
             var data = JSON.parse(res.res.text);
-            (JSON.stringify(data.data)).should.equal('{"foo":"bar"}')
+            (JSON.stringify(data.data)).should.equal('{"foo":"bar"}');
             done();
           });
       });
@@ -660,7 +661,7 @@ describe('Routing', function() {
               throw err;
             }
             var data = JSON.parse(res.res.text);
-            (JSON.stringify(data.data)).should.equal('["foo","bar",{"obj":{"hello":"world"}}]')
+            (JSON.stringify(data.data)).should.equal('["foo","bar",{"obj":{"hello":"world"}}]');
             done();
           });
       });
@@ -859,7 +860,7 @@ describe('Routing', function() {
           if (err) {
             throw err;
           }
-          console.log(res.res.headers)
+          console.log(res.res.headers);
           res.res.headers['content-disposition'].should.equal('attachment; filename=redisfire-test_feed_link.json');
           done();
         });
