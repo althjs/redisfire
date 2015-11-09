@@ -681,6 +681,7 @@ describe('Routing', function() {
           });
       });
 
+
       it('[GET] /rest/redisfire-test code should be "SUCCESS"', function (done) {
         request(app)
           .get('/rest/redisfire-test')
@@ -798,6 +799,19 @@ describe('Routing', function() {
       });
 
 
+      it('[redis-helper] delete signle item', function (done) {
+        request(app)
+          .get('/service/foo/redis_helper_del')
+          .send()
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+            res.res.text.should.equal('SUCCESS');
+            done();
+          });
+      });
 
       it('if server port already used, the redifire service should show the correct error message', function (done) {
         this.timeout(4000);
@@ -867,7 +881,191 @@ describe('Routing', function() {
       });
 
 
-
+      it('[PUT] valid PUT request shuold replace that key', function (done) {
+        request(app)
+          .put('/rest/redisfire-test/feed')
+          .send({icon:"bar",hello:"world"})
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+            var data = JSON.parse(res.res.text);
+            data.code.should.equal('SUCCESS');
+            done();
+          });
+      });
     });
 
+
+    describe('Redisfire  Authentication test', function() {
+      it('/service/foo/init_test_auth should response "SUCCESS"', function (done) {
+        this.timeout(4000);
+        request(app)
+          .get('/service/foo/init_test_auth')
+          .send()
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+
+            res.res.text.should.equal('SUCCESS');
+
+            done();
+          });
+      });
+
+      it('/service/foo/auth_test should response "Access Denined"', function (done) {
+        request(app)
+          .get('/service/foo/auth_test_get')
+          .send()
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+
+            res.res.text.should.equal('{"res":{"code":"FAIL","message":"Access Denied"},"params":{"foo":"bar"}}');
+
+            done();
+          });
+      });
+
+      it('/service/foo/auth_test_member_get should response "unknown project"', function (done) {
+        request(app)
+          .get('/service/foo/auth_test_member_get')
+          .send()
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+
+            res.res.text.should.equal('{"res":{"code":"FAIL","message":"unknown project"},"params":{"foo":"bar"}}');
+
+            done();
+          });
+      });
+
+      it('/service/foo/auth_test_setUser should add auth project correctly', function (done) {
+        request(app)
+          .get('/service/foo/auth_test_setUser')
+          .send()
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+
+            res.res.text.should.equal('{"redisfire-test-auth-member>member_12345>>key":"member_12345","redisfire-test-auth-member>member_12345>>info>foo":"bar","redisfire-test-auth-member>member_12345>>other_info":"blablabla"}');
+
+            done();
+          });
+      });
+
+      it('/service/foo/auth_test_setUser_fail should reject for unknown project', function (done) {
+        request(app)
+          .get('/service/foo/auth_test_setUser_fail')
+          .send()
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+
+            res.res.text.should.equal('unknown project');
+
+            done();
+          });
+      });
+
+      it('/service/foo/auth_test_getUser should return user info', function (done) {
+        request(app)
+          .get('/service/foo/auth_test_getUser')
+          .send()
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+
+            res.res.text.should.equal('{"info":{"foo":"bar"},"key":"member_12345","other_info":"blablabla"}');
+
+            done();
+          });
+      });
+
+      it('/service/foo/auth_test_getUser_fail should return user info', function (done) {
+        request(app)
+          .get('/service/foo/auth_test_getUser_fail')
+          .send()
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+
+            res.res.text.should.equal('AUTH ERR 1:restGET redisHGET res err: NO DATA FOUND (Cannot read property \'length\' of undefined)');
+
+            done();
+          });
+      });
+
+      it('/rest/redisfire-test-auth/feed/entry/2/ response correct data', function (done) {
+        request(app)
+          .get('/rest/redisfire-test-auth/feed/entry/2/')
+          .set('cookie', 'redisfire-test-auth-key=member_12345_unknown_user')
+          .send()
+          .expect(403)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+
+            (JSON.parse(res.res.text)).code.should.equal('FAIL');
+
+            done();
+          });
+      });
+
+      it('/rest/redisfire-test-auth/feed/entry/2/ response correct data', function (done) {
+        request(app)
+          .get('/rest/redisfire-test-auth/feed/entry/2/')
+          .set('cookie', 'redisfire-test-auth-key=member_12345')
+          .send()
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+
+            (JSON.parse(res.res.text)).code.should.equal('SUCCESS');
+
+            done();
+          });
+      });
+
+      it('crypto method shoud works well', function (done) {
+        request(app)
+          .get('/service/foo/auth_crypto')
+          .send()
+          .expect(200)
+          .end(function (err, res) {
+            if (err) {
+              throw err;
+            }
+
+            var data = (JSON.parse(res.res.text));
+
+            data.test1.should.equal('2fa23612e09e3c46be74607353233769');
+            data.test2.should.equal('hihi');
+
+            done();
+          });
+      });
+
+
+
+    });
 });

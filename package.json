@@ -1,6 +1,6 @@
 {
   "name": "redisfire",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "author": "Jongsoon Park <althjs@gmail.com>",
   "scripts": {
     "postinstall": "node utils/postinstall",
@@ -42,7 +42,7 @@
   "bugs": {
     "url": "https://github.com/althjs/redisfire/issues"
   },
-  "main": "lib/index",
+  "main": "lib/index.js",
   "keywords": [
     "redisfire",
     "firebase",

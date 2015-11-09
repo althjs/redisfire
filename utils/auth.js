@@ -16,7 +16,7 @@ exports.checkAuth = function (projectName, req, ioGET) {
 
       if (req.cookies[conf.auth_key]) {
         try {
-          var auth = _redis.decrypt(req.cookies[conf.auth_key]),
+          var auth = conf.auth_secure ? _redis.decrypt(req.cookies[conf.auth_key]) : req.cookies[conf.auth_key],
             key = conf.auth + (/^\//.test(auth) ? '' : '/') + auth;
           console.log('AUTH VALUE:', auth, key);
 
@@ -25,7 +25,8 @@ exports.checkAuth = function (projectName, req, ioGET) {
             deferred.resolve(o);
           }, function(err) {
             console.log('AUTH ERR 1:' + err);
-            deferred.reject('AUTH ERR 1:' + err);
+            // deferred.reject('AUTH ERR 1:' + err);
+            deferred.reject('Access Denied');
           });
 
         } catch(e) {
@@ -49,7 +50,7 @@ exports.getUser = function (projectName, req, ioGET) {
   var conf = _redis.getProjectConf(projectName),
     deferred = $q.defer();
 
-    var auth = _redis.decrypt(req.cookies[conf.auth_key]),
+    var auth = conf.auth_secure ? _redis.decrypt(req.cookies[conf.auth_key]) : req.cookies[conf.auth_key],
       key = conf.auth + (/^\//.test(auth) ? '' : '/') + auth;
 
     ioGET(key).then(function(o) {
@@ -69,6 +70,7 @@ exports.setUser = function (projectName, user, req, ioPOST) {
   var conf = _redis.getProjectConf(projectName),
     deferred = $q.defer();
 
+  if (conf) {
     var key = conf.auth + (/^\//.test(user.key) ? '' : '/') + user.key;
 
     // delete user.key;
@@ -79,6 +81,9 @@ exports.setUser = function (projectName, user, req, ioPOST) {
       console.log('AUTH ERR 1:' + err);
       deferred.reject('AUTH ERR 1:' + err);
     });
+  } else {
+    deferred.reject('unknown project');
+  }
 
   return deferred.promise;
 };

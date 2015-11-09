@@ -274,7 +274,7 @@ function redisHGET(projectName, key) {
 
         deferred.resolve(oHash);
       } catch(e) {
-        deferred.reject('데이터가 없습니다. (' + e.message + ')');
+        deferred.reject('NO DATA FOUND (' + e.message + ')');
         console.log('redisHGET err:' + e.message);
       }
 
@@ -371,6 +371,7 @@ function redisHDEL(projectName, keys) {
     } else {
       var delOne = function (key, projectName) {
         var df = $q.defer();
+        console.log('XXXXX', key, projectName);
         client.hdel(projectName, key, function (error, tf) {
           if (error || !tf) {
             df.resolve(0);
@@ -431,4 +432,12 @@ exports.getHashAllData = function(projectName) {
   });
 
   return deferred.promise;
+};
+
+/**
+ * getRedisClient return redis client
+ * @return {object} redisclient
+ */
+exports.getRedisClient = function() {
+  return client;
 };

@@ -128,11 +128,31 @@ curl http://localhost:3000/rest/theverge/feed/entry/0
 ```
 
 ## CURD realtime notifications
-* It's developed with socket.io.
-* DEMO:
+It's developed with socket.io.
+
+### Client side - demo:
   http://localhost:3000/
 
-## CURD over socket.io
+### Server side
+```javascript
+var redisfire = require('redisfire');
+
+var socketHost = 'http://localhost:/redis';
+socket_client = require('socket.io-client')(socketHost);
+
+var reqKey = new Date().getTime();
+socket_client.emit('GET', (key || 'redisfire-test/feed/entry/2/author/name'), {key:, reqKey, foo:'bar'});
+// "redsfire" event is fired as REDIS MONITOR events.
+socket_client.on('redisfire', function(eventType, socket_res, params){
+  if (eventType === 'GET' && params.key === reqKey) {
+    console.log(socket_res);
+  }
+}, function(err) {
+  console.log(err);
+});
+```
+
+### CURD over socket.io
 * 1. open http://localhost:3000/
 * 2. try js code on the developer console.
 
@@ -147,7 +167,98 @@ socket.emit('DELETE', 'theverge/feed/entry/2/author/name2', {foo:'bar'});
 socket.emit('PUT', 'theverge/feed/entry/2/author', {name: 'Jongsoon'}, {foo:'bar'});
 ```
 
-##
+## Get socket.io instance
+```javascript
+var redisfire = require('redisfire');
+
+redisfire.getIO().then(function(_io) {
+  var foo_namespace = _io.of('/redis_foo');
+
+  console.log('FOO SOCKET /redis_foo initialized');
+
+  foo_namespace.on('connection', function(socket){
+    console.log('FOO someone connected to redis_foo namespace');
+    socket.emit('hi', {message: 'emulate new socket.io namespace'});
+  });
+
+  // emulate socket.io client
+  var client = require('socket.io-client')('http://localhost:3000/redis_foo');
+  client.on('connect', function(){
+    console.log('FOO SOCKET redis_foo connected to socketHost:', socketHost);
+  });
+
+  client.on('hi', function(data) {
+    console.log('FOO namespace hi event: ' + JSON.stringify(data));
+  });
+});
+```
+
+## Authentication
+to enable Authentication for some project, add auth options to redisfire-conf.json
+```javascript
+{
+  "projects": [
+    {
+      "name": "redisfire-test-auth",
+      "description": "redisfire Mocha test project for Authentication",
+      "auth": "redisfire-test-auth-member", // hidden project for Authentication for this Project
+      "auth_key": "redisfire-test-auth-key",  // cookie name for check auth
+      "auth_secure": false // encrypt auth value or not
+    }
+  ],
+  "CRYPTO_KEY": "test-key"  // encrypt/decrypt crypto key
+}
+```
+If auth is enabled, redisfire check hidden Authentication project for each request.
+Hidden Authentication is just key / value pair and the key is exists, redisfire regards valid request.
+
+### redisfire.setUser(projectName, userInfo) - Add user to auth project
+Add user for specific project - user object must have "key"
+```javascript
+exports.auth_test_setUser = function(req, res) {
+  var user = {
+    key: 'member_12345',  // must have this key
+    info: {foo: 'bar'},
+    other_info: "blablabla"
+  };
+
+  redisfire.setUser('redisfire-test-auth', user).then(function(o) {
+    res.send(o);
+
+    // if user added successfully, set cookie for the login.
+    // if auth_secure is true, the auth cookie value must encrypted.
+    res.cookie(conf.auth_key, redisfire.encrypt(user.key), { domain: '.redisfire.com', path: '/' });
+    res.redirect('/');
+  });
+}
+```
+
+### redisfire.getUser(projectName) - get userinfo for login-ed user
+ user for specific project - user object must have "key"
+```javascript
+exports.auth_getUser = function(req, res) {
+  req.cookies['redisfire-test-auth-key'] = 'member_12345';
+  redisfire.getUser('redisfire-test-auth', req).then(function(o) {
+    res.send(o);
+  });
+}
+```
+
+### redisfire.encrtpt(text) - encrypt text
+redisfire crypto function use 'aes-256-cbc'.
+```javascript
+var cipherText = redisfire.encrypt('hihi');
+console.log(cipherText);
+// 2fa23612e09e3c46be74607353233769
+```
+
+### redisfire.decrypt(cipherText) - decrypt text
+redisfire crypto function use 'aes-256-cbc'.
+```javascript
+var text = redisfire.encrypt('2fa23612e09e3c46be74607353233769');
+console.log(text);
+// hihi
+```
 
 ## Caution
 * do not install globally
@@ -166,7 +277,7 @@ socket.emit('PUT', 'theverge/feed/entry/2/author', {name: 'Jongsoon'}, {foo:'bar
 * ~ 0.0.12
   * bugfix
 * 0.0.13
-  * feature fdd:
+  * feature add:
     * CURD over socket
 * 0.0.14
   * bugfix:
@@ -192,14 +303,17 @@ socket.emit('PUT', 'theverge/feed/entry/2/author', {name: 'Jongsoon'}, {foo:'bar
   * add deep depth create for POST
   * sorted JSON return by key name for GET
   * update npm dependencies
+* 0.0.23
+  * features:
+    * Authentication
+    * crypto (redisfire.encypt / redisfire.decrypt)
+  * bugfix
+
 
 ## License
 * The MIT License (MIT)
 * http://opensource.org/licenses/MIT
 
-## TBD
-* Authentication
-* ...
 
 
 That's all folks!

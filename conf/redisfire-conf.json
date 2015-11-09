@@ -8,6 +8,14 @@
         {
             "name": "redisfire-test",
             "description": "redisfire Mocha test project"
+        },
+        {
+          "name": "redisfire-test-auth",
+          "description": "redisfire Mocha test project",
+          "auth": "redisfire-test-auth-member",
+          "auth_key": "redisfire-test-auth-key",
+          "auth_secure": false
         }
-    ]
+    ],
+    "CRYPTO_KEY": "test-key"
 }
