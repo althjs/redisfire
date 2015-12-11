@@ -55,7 +55,9 @@ function getServices() {
 
           for (i=0; i<len; i++) {
               serviceName = serviceFiles[i].split('.js')[0];
-              service[serviceName] = require(serviceDir + '/' + serviceName);
+              try {
+                service[serviceName] = require(serviceDir + '/' + serviceName);
+              } catch(e) {}
           }
 
           return deferred.resolve(service);

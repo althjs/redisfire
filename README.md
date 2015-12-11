@@ -16,6 +16,8 @@ Let's make Firebase features using Express, Socket.io, Redis and other powerful 
 * Realtime notifications for CURD actions
 * JSON import/export
 * Schema free
+* Express.js simple route.
+
 
 ## Installation
 ```bash
@@ -48,20 +50,22 @@ $ cat conf/redisfire-conf.json
 
 
 ## CLI
+* the CLI command real path is 'node_modules/.bin/redisfire'
+
 > redisfire - manage server process
 
 ```bash
 # Examples:
-$ redisfire --help  # show help
-$ redisfire start -p 10001 # start Redisfire
+$ ./node_modules/.bin/redisfire --help  # show help
+$ ./node_modules/.bin/redisfire start -p 10001 # start Redisfire
 ```
 
 > redisfire-import - Import JSON file to Redisfire
 
 ```bash
 # Examples:
-$ redisfire-import --help  # show help
-$ redisfire-import test.json testProject  # import test.json to testProject
+$ ./node_modules/.bin/redisfire-import --help  # show help
+$ ./node_modules/.bin/redisfire-import test.json testProject  # import test.json to testProject
 // after import, edit redisfire-conf.json
 // and check http://localhost:3000/rest/testProject
 
@@ -153,8 +157,8 @@ socket_client.on('redisfire', function(eventType, socket_res, params){
 ```
 
 ### CURD over socket.io
-* 1. open http://localhost:3000/
-* 2. try js code on the developer console.
+* open http://localhost:3000/
+* try Javascript code on the developer console in Browser.
 
 ```javascript
 // GET
@@ -260,6 +264,20 @@ console.log(text);
 // hihi
 ```
 
+
+## Express.js simple route - redisfire service
+Redisfire includes Web application server the Express.js by default.
+The '/service' uri is occupied for the Redisfire servcie.
+If you add test.js to service folder, '/service/test' path will working with ExpressJS Routing way.
+The exported function name is the exposed like '/service/test/[function name]'.
+The function must have two arguments req & res. (Please refer   [Express Routing](http://expressjs.com/en/guide/routing.html" target="_blank">Express Routing))
+
+```bash
+# 1. after install redisfire, check 'service/foo.js' sample service.
+# 2. open http://localhost:3000/service/foo/demo
+```
+
+
 ## Caution
 * do not install globally
 * the postinstall script is trying to copy folders below. (that's not working with -g option)
@@ -308,6 +326,10 @@ console.log(text);
     * Authentication
     * crypto (redisfire.encypt / redisfire.decrypt)
   * bugfix
+* 0.0.24
+  * features:
+    * redisfire service
+    * expose redisfire.successCallback && redisfire.errorCallback
 
 
 ## License

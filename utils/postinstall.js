@@ -48,6 +48,12 @@ console.log('2. ' + srcDir + ' to ' + destDir);
 copyRecursiveSync(srcDir, destDir);
 
 
+if (!/travis/.test(__dirname)) {
+  srcDir = require('path').join(__dirname + './../_sample_data/sample_service.txt');
+  destDir = require('path').join(__dirname + './../../../service');
+  fs.mkdirSync(destDir);
+  fs.writeFileSync(destDir + '/foo.js', fs.readFileSync(srcDir, 'utf-8'));
+}
 
 /*
 srcDir = require('path').join(__dirname + './../_sample_data');

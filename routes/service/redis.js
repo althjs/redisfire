@@ -952,7 +952,7 @@ exports.rest = function (req, res) {
       }
     }, function(err) {
       if (err === 'unknown project') {
-        res.status(404);        
+        res.status(404);
       } else {
         res.status(403);
       }
@@ -984,6 +984,8 @@ function errorCallback (err) {
     };
 }
 
+exports.successCallback = successCallback;
+exports.errorCallback = errorCallback;
 
 
 exports.getUser = function(projectName, req) {
