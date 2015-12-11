@@ -1,5 +1,7 @@
 Redisfire - realtime memory DB Service.
 ===========================
+
+[![Join the chat at https://gitter.im/althjs/redisfire](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/althjs/redisfire?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/althjs/redisfire.png)](https://travis-ci.org/althjs/redisfire)
 [![Coverage Status](https://coveralls.io/repos/althjs/redisfire/badge.svg?branch=master&service=github)](https://coveralls.io/github/althjs/redisfire?branch=master)
 [![Dependencies Status](https://david-dm.org/althjs/redisfire.svg)](https://david-dm.org/althjs/redisfire)
