@@ -83,7 +83,7 @@ exports.init_test = function(req, res) {
 
 // restful path test
 exports['rest/:param1/:param2'] = function(req, res) {
-  var pathParam = req.query._pathParam;
+  var pathParam = req.params;
   res.send(pathParam);
 };
 

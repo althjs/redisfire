@@ -291,7 +291,7 @@ The function must have two arguments req & res. (Please refer   [Express Routing
 > "static" folder to "node_modules/../statrc"
 ```
 
-## Versio HIstory
+## Version history
 * 0.0.1
   * first publish
 * ~ 0.0.12
@@ -332,6 +332,10 @@ The function must have two arguments req & res. (Please refer   [Express Routing
   * features:
     * redisfire service
     * expose redisfire.successCallback && redisfire.errorCallback
+* 0.0.25
+  * features:
+    * using mongodb for Authentication user data
+    * add configures for bodyParser.json, bodyParser.urlencoded
 
 
 ## License

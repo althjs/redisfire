@@ -117,18 +117,40 @@ function getProjectConf(projectName) {
 }
 exports.getProjectConf = getProjectConf;
 
-client = redis.createClient(redisClientConf);
-client.on('connect', function () {
-  updateCache().then(function() {
+var isRedisfireReady = false;
+exports.isReady = function() {
+    var deferred = $q.defer(),
+        checkReady = function() {
+            if (isRedisfireReady) {
+                deferred.resolve(true);
+            } else {
+                setTimeout(function() {
+                    checkReady();
+                }, 300);
+            }
+        };
 
-  });
-});
+    checkReady();
 
-client.on('error', function (err) {
-  console.log('Error: ' + err);
-  console.log('Redis connection failed. Please check redis server is running.');
-  process.exit(1);
-});
+    return deferred.promise;
+};
+
+if (!conf.ignore_redis) {
+    client = redis.createClient(redisClientConf);
+    client.on('connect', function () {
+      updateCache().then(function() {
+          isRedisfireReady = true;
+      });
+    });
+
+    client.on('error', function (err) {
+      console.log('Error: ' + err);
+      console.log('Redis connection failed. Please check redis server is running.');
+      process.exit(1);
+    });
+}
+
+
 
 function updateCache() {
   var deferred = $q.defer();
@@ -145,17 +167,21 @@ function updateCache() {
       if (projects[i].auth) {
         deferreds[j] = $q.defer();
         promises[j] = deferreds[j].promise;
+        /* jshint ignore:start */
         redisHKEYS(projects[i].auth, j).then(function(o) {
           deferreds[o.params].resolve();
         });
+        /* jshint ignore:end */
         j++;
       }
 
       deferreds[j] = $q.defer();
       promises[j] = deferreds[j].promise;
+      /* jshint ignore:start */
       redisHKEYS(projects[i].name, j).then(function(o) {
         deferreds[o.params].resolve();
       });
+      /* jshint ignore:end */
       j++;
     }
 
@@ -191,6 +217,8 @@ exports.doWatchConf = doWatchConf;
 * @param  {function} monitorCallback 모니터 이벤트 콜백
 */
 function doMonitor(initCallback, monitorCallback) {
+  if (conf.ignore_redis) { return; }
+
   var client_monitor = redis.createClient(redisClientConf);
 
   client_monitor.on('connect', function () {
@@ -261,7 +289,7 @@ function redisHGET(projectName, key) {
     var params = [projectName].concat(keys);
     var oHash = {};
 
-    params.push(function(error, dd) {
+    client.hmget(params, function(error, dd) {
       // console.log('hash', dd);
 
       try {
@@ -279,8 +307,6 @@ function redisHGET(projectName, key) {
       }
 
     });
-
-    client.hmget(params);
 
   } catch(e) {
     if (!cache[projectName]) {
@@ -320,7 +346,7 @@ function redisHMSET(projectName, key, hash) {
 
   console.log('HMSET Target:', JSON.stringify(hash, null, 2));
 
-  params.push(function (error, hash) {
+  client.hmset(params, function (error, hash) {
     if (error) {
       deferred.reject(error);
     } else if (!hash) {
@@ -329,8 +355,6 @@ function redisHMSET(projectName, key, hash) {
       deferred.resolve('SUCCESS');
     }
   });
-
-  client.hmset(params);
 
   return deferred.promise;
 }

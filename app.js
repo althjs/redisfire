@@ -8,14 +8,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 var intercepter = require('./routes/interceptor');
-var swig = require('swig');
 var redisfire = require('./routes/service/redis');
-
-
-swig.setDefaults({
-    cache: false,
-    varControls: ['{[', ']}']
-});
 
 var app = express();
 
@@ -47,15 +40,53 @@ if (/travis/.test(__dirname)) { // for travis-ci test
 
 console.log('@@ staticDir: ' + staticDir, app.get('env'));
 
+var redisfireConf = require('./utils/redis-helper').getConf();
+
+var jsonConf = {},
+    urlencodedConf = { extended: false };
+if (redisfireConf.express) {
+    jsonConf = redisfireConf.express['body-parser-json-options'] || jsonConf;
+    urlencodedConf = redisfireConf.express['body-parser-urlencoded-options'] || urlencodedConf;
+    console.log('@@ bodyParser json conf: ', JSON.stringify(jsonConf));
+    console.log('@@ bodyParser urlencoded conf: ', JSON.stringify(urlencodedConf));
+}
+
+
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json(jsonConf));
+app.use(bodyParser.urlencoded(urlencodedConf));
 app.use(cookieParser());
 app.use(express.static(staticDir));
 
+
+
+
+
+// console.log('VIEWS::::', intercepter.views);
+// intercepter.getServices('views').then(function(_views) {
+var k,
+  view;
+for (k in intercepter.views) {
+  view = intercepter.views[k];
+  if (view.route && typeof view.middleware === 'function') {
+
+    // console.log('VIEWS:', view.route, view.middleware);
+    app.use(view.route, view.middleware);
+  }
+}
+
+// for external router configuration
+if (redisfireConf.express && redisfireConf.express.router) {
+    require(redisfireConf.express.router)(app);
+}
+
+// console.log(intercepter.service);
 app.use('/service/*', intercepter.service);
+
+
+
 
 app.use('/rest*', redisfire.rest);
 

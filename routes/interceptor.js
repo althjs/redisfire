@@ -18,6 +18,11 @@ var interceptor_pre_rest = [];
  **/
 var interceptor_post = {};
 
+/**
+ * views templates
+ */
+var views = {};
+
 
 /**
  * 서비스 폴더를 루프 돌면서 해당 파일을 serviceName 으로,
@@ -34,16 +39,25 @@ var interceptor_post = {};
  *   };
  * }
  */
-function getServices() {
+function getServices(isView) {
     var deferred = require('q').defer();
     var fs = require('fs'),
         serviceDir;
 
-    if (/travis/.test(__dirname)) { // for travis-ci test
-      serviceDir = require('path').join(__dirname + './../service');
+    if (!isView) {
+      if (/travis/.test(__dirname)) { // for travis-ci test
+        serviceDir = require('path').join(__dirname + './../service');
+      } else {
+        serviceDir = require('path').join(__dirname + (/node_modules/.test(__dirname) ? './../../../service' : './../../service'));
+      }
     } else {
-      serviceDir = require('path').join(__dirname + (/node_modules/.test(__dirname) ? './../../../service' : './../../service'));
+      if (/travis/.test(__dirname)) { // for travis-ci test
+        serviceDir = require('path').join(__dirname + './../views');
+      } else {
+        serviceDir = require('path').join(__dirname + (/node_modules/.test(__dirname) ? './../../../views' : './../../views'));
+      }
     }
+
 
     console.log('@@ serviceDir:', serviceDir);
     if (fs.existsSync(serviceDir)) {
@@ -54,10 +68,15 @@ function getServices() {
               service = {};
 
           for (i=0; i<len; i++) {
+            if (/\.js/.test(serviceFiles[i])) {
               serviceName = serviceFiles[i].split('.js')[0];
+              // console.log(serviceName);
               try {
                 service[serviceName] = require(serviceDir + '/' + serviceName);
-              } catch(e) {}
+              } catch(e) {
+                console.log('@@ serviceLoad err:' + e.message);
+              }
+            }
           }
 
           return deferred.resolve(service);
@@ -68,6 +87,44 @@ function getServices() {
 
     return deferred.promise;
 }
+
+function getViews() {
+    var deferred = require('q').defer();
+    var fs = require('fs'),
+        viewDir;
+
+    if (/travis/.test(__dirname)) { // for travis-ci test
+      viewDir = require('path').join(__dirname + './../views');
+    } else {
+      viewDir = require('path').join(__dirname + (/node_modules/.test(__dirname) ? './../../../views' : './../../views'));
+    }
+
+
+    console.log('@@ viewDir:', viewDir);
+    if (fs.existsSync(viewDir)) {
+      var viewFiles = fs.readdirSync(viewDir);
+      var viewName,
+          i,
+          len = viewFiles.length,
+          views = {};
+
+      for (i=0; i<len; i++) {
+          if (/.js$/.test(viewFiles[i])) {
+              viewName = viewFiles[i].split('.js')[0];
+              try {
+                views[viewName] = require(viewDir + '/' + viewName);
+              } catch(e) {
+                console.log('@@ viewLoad err:' + e.message);
+              }
+          }
+      }
+
+      return views;
+    } else {
+      return null;
+    }
+}
+
 
 /**
  * getService 로 가져온 서비스 중 rest 방식으로 exports 된것들을 찾아 배열로 정의한다
@@ -118,6 +175,7 @@ function init() {
 
         interceptor_pre_rest = getRestfulServiceInfo(interceptor_pre);
     });
+
 }
 
 init();
@@ -235,7 +293,8 @@ exports.service = function (req, res, next) {
     } else if (restfulPathInfo) {
         pathName = restfulPathInfo.originalPath;
 
-        req.query._pathParam = restfulPathInfo.pathParam;
+        //req.query._pathParam = restfulPathInfo.pathParam;
+        req.params = restfulPathInfo.pathParam;
 
         // console.log('>>>> REST:', pathName, restfulPathInfo);
         try {
@@ -259,3 +318,6 @@ exports.service = function (req, res, next) {
         res.send('service not found');
     }
 };
+
+
+exports.views = getViews();
