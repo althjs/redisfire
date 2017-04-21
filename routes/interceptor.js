@@ -74,7 +74,7 @@ function getServices(isView) {
               try {
                 service[serviceName] = require(serviceDir + '/' + serviceName);
               } catch(e) {
-                console.log('@@ serviceLoad err:' + e.message);
+                console.log('@@ serviceLoad err:' + e.message,  serviceDir + '/' + serviceFiles[i]);
               }
             }
           }
