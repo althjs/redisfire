@@ -35,7 +35,7 @@
     "q": "1.5.*",
     "redis": "2.8.*",
     "request": "2.81.*",
-    "socket.io": "2.0.*",
+    "socket.io": "1.7.*",
     "winston": "2.3.*"
   },
   "description": "Redisfire is not related with Firebase. But Redisfire provides very similar features like Firebase.",
