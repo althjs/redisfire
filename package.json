@@ -1,6 +1,6 @@
 {
   "name": "redisfire",
-  "version": "0.0.26",
+  "version": "0.0.27",
   "author": "Jongsoon Park <althjs@gmail.com>",
   "scripts": {
     "postinstall": "node utils/postinstall",
@@ -21,10 +21,10 @@
     "redisfire-import": "./bin/redisfire-import"
   },
   "dependencies": {
-    "body-parser": "1.17.*",
+    "body-parser": "1.18.*",
     "commander": "^2.9.*",
     "cookie-parser": "1.4.*",
-    "debug": "2.6.*",
+    "debug": "3.0.*",
     "express": ">4.5",
     "jade": "1.*",
     "lodash": "~4.*",
@@ -33,9 +33,9 @@
     "morgan": "1.8.*",
     "node-json-minify": "1.*",
     "q": "1.5.*",
-    "redis": "2.7.*",
+    "redis": "2.8.*",
     "request": "2.81.*",
-    "socket.io": "^1.7.*",
+    "socket.io": "2.0.*",
     "winston": "2.3.*"
   },
   "description": "Redisfire is not related with Firebase. But Redisfire provides very similar features like Firebase.",

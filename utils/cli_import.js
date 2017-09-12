@@ -72,6 +72,10 @@ client.on('error', function (err) {
 });
 
 
+if (!_fileName) {
+  program.outputHelp();
+  process.exit(1);
+}
 
 
 try {

@@ -266,7 +266,11 @@ exports.port_already_occupied = function (req, res) {
   console.log('port_already_occupied command:', command);
   try {
     exec(command, function(error, stdout, stderr) {
-      res.send(stderr);
+      if (/Port 3001 is already in use/.test(stderr)) {
+        res.send('Port 3001 is already in use\n');
+      } else {
+        res.send(stderr);
+      }
     });
   } catch(e) {
     res.send('port_already_occupied err:', e.message);

@@ -338,6 +338,9 @@ The function must have two arguments req & res. (Please refer   [Express Routing
     * add configures for bodyParser.json, bodyParser.urlencoded
 * 0.0.26
   * module dependency update
+* 0.0.27
+  * module dependency update
+
 
 ## License
 * The MIT License (MIT)
