@@ -292,9 +292,11 @@ exports.redisfire_cli = function (req, res) {
       if (/Port 3001 is already in use/.test(stderr)) {
         console.log('redisfire_cli command:', command);
         exec(command, function(error, stdout, stderr) {
+            console.log(stdout);
           if (/Usage: redisfire <start|stop|status>/.test(stdout)) {
+            console.log('redisfire_cli command:', command + ' start -p 80');
             exec(command + ' start -p 80', function(error, stdout, stderr) {
-              if (/Port 80 requires elevated privileges/.test(stderr)) {
+              if (/(Port 80 is already in use|Port 80 requires elevated privileges)/.test(stderr)) {
                 res.send(true);
               } else {
                 res.send(false);

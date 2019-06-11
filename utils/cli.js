@@ -17,6 +17,8 @@ program
 
     _action = action;
 
+    options = options || {};
+
     if (options.port) {
       _opts.port = options.port;
     }
