@@ -338,7 +338,7 @@ The function must have two arguments req & res. (Please refer   [Express Routing
     * add configures for bodyParser.json, bodyParser.urlencoded
 * 0.0.26
   * module dependency update
-* 0.0.29
+* 0.0.30
   * module dependency update
 
 
