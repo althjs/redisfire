@@ -27,7 +27,7 @@
     "express": ">4.5",
     "lodash": "~4.*",
     "md5": "^2.0.0",
-    "mongoose": "5.5.*",
+    "mongoose": "5.7.*",
     "morgan": "1.9.*",
     "node-json-minify": "1.*",
     "q": "1.5.*",
